@@ -8,7 +8,7 @@ plugins {
 android {
     namespace = "com.primiterFlight.primiter.booking_flight"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "28.0.12163074"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
