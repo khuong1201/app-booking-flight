@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:booking_flight/presentation/view/welcome_screen.dart';
+import 'package:booking_flight/presentation/view/welcome/welcome_screen.dart';
+import 'package:booking_flight/presentation/view/home/booking_flight_screen.dart';
+import 'package:booking_flight/core/constants/constants.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -7,15 +10,15 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: WelcomeScreen(),
+      debugShowCheckedModeBanner: false,
+      initialRoute: AppRouters.welcomeScreen, // Route khởi chạy
+      routes: {
+        AppRouters.welcomeScreen: (context) => const WelcomeScreen(),
+        AppRouters.bookingFlight: (context) => const BookingFlightScreen(),
+      },
     );
   }
 }

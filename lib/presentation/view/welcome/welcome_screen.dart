@@ -1,33 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:booking_flight/core/constants/constants.dart';
+import 'package:booking_flight/presentation/view/welcome/welcome_page.dart';
 
 class WelcomeScreen extends StatefulWidget {
+  const WelcomeScreen({super.key});
+
   @override
-  _WelcomeScreenState createState() => _WelcomeScreenState();
+  WelcomeScreenState createState() => WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen> {
+class WelcomeScreenState extends State<WelcomeScreen> {
   final PageController controller = PageController();
   int currentIndex = 0;
 
   void nextPage() {
     if (currentIndex < 2) {
       controller.nextPage(
-        duration: Duration(milliseconds: 500),
+        duration: const Duration(milliseconds: 500),
         curve: Curves.ease,
       );
     } else {
-      Navigator.pushReplacementNamed(context, '/home'); // Điều hướng đến màn hình chính
+      goToBookingFlight();
     }
   }
 
   void skipToLastPage() {
-    controller.jumpToPage(2);
+    if (controller.hasClients) {
+      controller.jumpToPage(2);
+    }
+  }
+
+  void goToBookingFlight() {
+    Navigator.pushReplacementNamed(context, AppRouters.bookingFlight);
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFE6E6E6),
       body: Column(
         children: [
           Expanded(
@@ -38,7 +54,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   currentIndex = index;
                 });
               },
-              children: [
+              children: const [
                 WelcomePage(
                   imagePath: 'assets/image/welcome1.png',
                   title: 'Plan a Trip',
@@ -58,20 +74,41 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 16),
-            child: Row(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 30),
+            child: currentIndex == 2
+                ? ElevatedButton(
+              onPressed: goToBookingFlight,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryColor,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                fixedSize: const Size(179, 44),
+              ),
+              child: const Text(
+                'Start Now',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  height: 1.25,
+                  color: Colors.white,
+                ),
+              ),
+            )
+                : Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
                   onPressed: skipToLastPage,
-                  child: Text(
+                  child: const Text(
                     'Skip',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       fontFamily: 'Inter',
                       decoration: TextDecoration.underline,
-                      color: Colors.black,
+                      color: AppColors.neutralColor,
                     ),
                   ),
                 ),
@@ -79,12 +116,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(3, (index) {
                     return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 2),
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
                       width: index == currentIndex ? 12 : 8,
                       height: 8,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: index == currentIndex ? AppColors.primaryColor : Color(0xFFD9D9D9),
+                        color: index == currentIndex ? AppColors.primaryColor : const Color(0xFFD9D9D9),
                       ),
                     );
                   }),
@@ -97,58 +134,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                       fontSize: 12,
                       fontWeight: FontWeight.w400,
                       fontFamily: 'Inter',
-                      decoration: TextDecoration.underline,
                       color: AppColors.primaryColor,
                     ),
                   ),
                 ),
               ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class WelcomePage extends StatelessWidget {
-  final String imagePath;
-  final String title;
-  final String description;
-
-  const WelcomePage({
-    required this.imagePath,
-    required this.title,
-    required this.description,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          SizedBox(height: 40),
-          Image.asset(
-            imagePath,
-            width: 412,
-            height: 411,
-            fit: BoxFit.fill,
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 16, right: 16, top: 28, bottom: 8),
-            child: Text(
-              title,
-              style: AppTextStyle.heading2Pri,
-              textAlign: TextAlign.center,
-            ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
-            child: Text(
-              description,
-              style: AppTextStyle.body3,
-              textAlign: TextAlign.center,
             ),
           ),
         ],
