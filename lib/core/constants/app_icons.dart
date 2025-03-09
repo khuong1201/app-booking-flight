@@ -26,8 +26,14 @@ class AppIcons{
   static const String list = "assets/icons/List.png";
 }
 class AppLogo{
-  static const String logoBamboo = "assets/icons/Bamboo-Airways-V.png";
-  static const String vietjet = "assets/icons/vietjet.png";
-  static const String vnAirlines = "assets/icons/vn airlines.png";
-  static const String vietravel = "assets/icons/Vietravel-Airlines.png";
+  static  const String primiter = "assets/logo/primiter.png";
+  static const String logoBamboo = "assets/logo/Bamboo-Airways-V.png";
+  static const String vietjet = "assets/logo/vietjet.png";
+  static const String vnAirlines = "assets/logo/vn airlines.png";
+  static const String vietravel = "assets/logo/Vietravel-Airlines.png";
+}
+class AppImage{
+  static const String welcome1="assets/image/welcome1";
+  static const String welcome2="assets/image/welcome2";
+  static const String welcome3="assets/image/welcome3";
 }
