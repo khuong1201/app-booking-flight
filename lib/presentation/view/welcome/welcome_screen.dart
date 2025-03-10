@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:booking_flight/core/constants/constants.dart';
 import 'package:booking_flight/presentation/view/welcome/welcome_page.dart';
-
+import 'package:booking_flight/core/utils/utils.dart';
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -42,8 +42,10 @@ class WelcomeScreenState extends State<WelcomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    Color backgroundColor = Color(0xFFE3E8F7);
+    ThemeHelper.updateStatusBar(backgroundColor);
     return Scaffold(
-      backgroundColor: Color(0xFFE6E6E6),
+      backgroundColor: backgroundColor,
       body: Column(
         children: [
           Expanded(
