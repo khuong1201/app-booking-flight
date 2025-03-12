@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking_flight/core/constants/constants.dart';
 import 'package:booking_flight/presentation/view/welcome/welcome_page.dart';
 import 'package:booking_flight/core/utils/utils.dart';
+import 'package:flutter/services.dart';
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
 
@@ -13,6 +14,16 @@ class WelcomeScreenState extends State<WelcomeScreen> {
   final PageController controller = PageController();
   int currentIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+        SystemChannels.textInput.invokeMethod('TextInput.hide');
+      }
+    });
+  }
   void nextPage() {
     if (currentIndex < 2) {
       controller.nextPage(
@@ -44,6 +55,7 @@ class WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     Color backgroundColor = Color(0xFFE3E8F7);
     ThemeHelper.updateStatusBar(backgroundColor);
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: Column(
@@ -148,3 +160,4 @@ class WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 }
+
