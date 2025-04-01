@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ThemeHelper {
   static bool isDarkBackground(Color color) {
-    double luminance = (0.2126 * color.red / 255) +
-        (0.7152 * color.green / 255) +
-        (0.0722 * color.blue / 255);
+    double luminance = (0.2126 * color.r / 255) +
+        (0.7152 * color.g / 255) +
+        (0.0722 * color.b / 255);
     return luminance < 0.5;
   }
 

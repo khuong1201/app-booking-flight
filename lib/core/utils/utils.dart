@@ -1,4 +1,4 @@
-export 'Dialog_utils.dart';
+export 'dialog_utils.dart';
 export 'format_utils.dart';
 export 'logger_utils.dart';
 export 'network_utils.dart';
