@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:booking_flight/core/constants/constants.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodel/home/flight_discount_view_model.dart';
-import 'flight_card.dart';
+import 'flight_card_view.dart';
 
 class FlightDiscount extends StatelessWidget {
   const FlightDiscount({super.key});

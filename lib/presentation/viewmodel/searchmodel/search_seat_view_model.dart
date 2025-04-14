@@ -4,7 +4,7 @@ import '../../../data/seat_class_data.dart';
 class SeatSelectionViewModel extends ChangeNotifier {
   String selectedClass = 'Economy';
 
-  List<SeatClass> get seatClasses => seatClassesData; // Use seatClassesData
+  List<SeatClass> get seatClasses => seatClassesData;
 
   void updateSelectedClass(String newClass) {
     if (selectedClass != newClass) {

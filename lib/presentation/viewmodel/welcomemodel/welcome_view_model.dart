@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:booking_flight/presentation/view/home/booking_flight_screen.dart';
+import 'package:booking_flight/presentation/view/home/booking_flight_view.dart';
 
 class WelcomeViewModel extends ChangeNotifier {
   final PageController controller = PageController();

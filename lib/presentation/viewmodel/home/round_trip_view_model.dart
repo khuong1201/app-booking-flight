@@ -1,20 +1,88 @@
 import 'package:flutter/material.dart';
-import '../../view/search/search_date.dart';
-import '../../view/search/search_number_of_passenger.dart';
-import '../../view/search/search_place.dart';
-import '../../view/search/search_seat.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../data/search_tickets_tmp_data.dart';
+import '../../view/search/search_date_view.dart';
+import '../../view/search/search_flight_tiket_view.dart';
+import '../../view/search/search_number_of_passenger_view.dart';
+import '../../view/search/search_place_view.dart';
+import '../../view/search/search_seat_view.dart';
 
 class RoundTripFormViewModel extends ChangeNotifier {
   Map<String, String>? departureAirport;
   Map<String, String>? arrivalAirport;
   DateTime? departureDate;
   DateTime? returnDate;
-  int passengers = 1;
-  String seatClass = "economy";
-  String get currentSeatClass => seatClass;
+  int passengerAdults = 1;
+  int passengerChilds = 0;
+  int passengerInfant = 0;
+  String seatClass = "Economy";
+
+  RoundTripFormViewModel() {
+    _loadTempData();
+  }
+
+  Future<void> _loadTempData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    departureAirport = await _loadAirportData(prefs, 'departure');
+    arrivalAirport = await _loadAirportData(prefs, 'arrival');
+    departureDate = await _loadDateData(prefs, 'round_trip_departure_date');
+    returnDate = await _loadDateData(prefs, 'round_trip_return_date');
+    passengerAdults = prefs.getInt('round_trip_passenger_adults') ?? 1;
+    passengerChilds = prefs.getInt('round_trip_passenger_childs') ?? 0;
+    passengerInfant = prefs.getInt('round_trip_passenger_infant') ?? 0;
+    seatClass = prefs.getString('round_trip_seat_class') ?? "Economy";
+
+    notifyListeners();
+  }
+
+  Future<Map<String, String>?> _loadAirportData(SharedPreferences prefs, String prefix) async {
+    final code = prefs.getString('${prefix}_code');
+    final city = prefs.getString('${prefix}_city');
+    if (code != null && city != null) {
+      return {'code': code, 'city': city};
+    }
+    return null;
+  }
+
+  Future<DateTime?> _loadDateData(SharedPreferences prefs, String key) async {
+    final dateStr = prefs.getString(key);
+    if (dateStr != null) {
+      return DateTime.tryParse(dateStr);
+    }
+    return null;
+  }
+
+  Future<void> _saveTempData() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    if (departureAirport != null) {
+      await prefs.setString('round_trip_departure_code', departureAirport!['code']!);
+      await prefs.setString('round_trip_departure_city', departureAirport!['city']!);
+    }
+    if (arrivalAirport != null) {
+      await prefs.setString('round_trip_arrival_code', arrivalAirport!['code']!);
+      await prefs.setString('round_trip_arrival_city', arrivalAirport!['city']!);
+    }
+    if (departureDate != null) {
+      await prefs.setString('round_trip_departure_date', departureDate!.toIso8601String());
+    }
+    if (returnDate != null) {
+      await prefs.setString('round_trip_return_date', returnDate!.toIso8601String());
+    }
+
+    await prefs.setInt('round_trip_passenger_adults', passengerAdults);
+    await prefs.setInt('round_trip_passenger_childs', passengerChilds);
+    await prefs.setInt('round_trip_passenger_infant', passengerInfant);
+    await prefs.setString('round_trip_seat_class', seatClass);
+  }
+
   void updateDepartureDate(DateTime selectedDate) {
     if (departureDate != selectedDate) {
       departureDate = selectedDate;
+      _saveTempData();
       notifyListeners();
     }
   }
@@ -22,6 +90,7 @@ class RoundTripFormViewModel extends ChangeNotifier {
   void updateReturnDate(DateTime selectedDate) {
     if (returnDate != selectedDate) {
       returnDate = selectedDate;
+      _saveTempData();
       notifyListeners();
     }
   }
@@ -32,19 +101,22 @@ class RoundTripFormViewModel extends ChangeNotifier {
     } else {
       arrivalAirport = selectedAirport;
     }
+    _saveTempData();
     notifyListeners();
   }
 
-  void updatePassengerCount(int totalPassengers) {
-    if (passengers != totalPassengers) {
-      passengers = totalPassengers;
-      notifyListeners();
-    }
+  void updatePassengerCount({required int adults, required int childs, required int infants}) {
+    passengerAdults = adults;
+    passengerChilds = childs;
+    passengerInfant = infants;
+    _saveTempData();
+    notifyListeners();
   }
 
   void updateSeatClass(String selectedClass) {
     if (seatClass != selectedClass) {
       seatClass = selectedClass;
+      _saveTempData();
       notifyListeners();
     }
   }
@@ -52,13 +124,15 @@ class RoundTripFormViewModel extends ChangeNotifier {
   Future<void> selectDate(BuildContext context, bool isDeparture, bool isRoundTrip) async {
     final selectedDate = await Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const SelectionDate()),
+      MaterialPageRoute(builder: (context) => const SelectionDate(isRoundTrip: true)),
     );
 
     if (selectedDate is Map<String, DateTime?>) {
-      updateDepartureDate(selectedDate['departingDate'] ?? departureDate!);
-      if (isRoundTrip) {
-        updateReturnDate(selectedDate['returningDate'] ?? returnDate!);
+      if (selectedDate['departingDate'] != null) {
+        updateDepartureDate(selectedDate['departingDate']!);
+      }
+      if (isRoundTrip && selectedDate['returningDate'] != null) {
+        updateReturnDate(selectedDate['returningDate']!);
       }
     }
   }
@@ -68,7 +142,7 @@ class RoundTripFormViewModel extends ChangeNotifier {
       context,
       MaterialPageRoute(
         builder: (context) => SearchPlace(
-          selectedAirport: isDeparture ? (arrivalAirport?["code"]) : (departureAirport?["code"]),
+          selectedAirport: isDeparture ? (arrivalAirport?["code"]) : departureAirport?["code"],
         ),
       ),
     );
@@ -113,8 +187,12 @@ class RoundTripFormViewModel extends ChangeNotifier {
       ),
       builder: (context) => const PassengerSelectionSheet(),
     );
-    if (result != null && result.containsKey('totalPassengers')) {
-      updatePassengerCount(result['totalPassengers']);
+    if (result != null && result.containsKey('adults') && result.containsKey('childs') && result.containsKey('infants')) {
+      updatePassengerCount(
+        adults: result['adults'],
+        childs: result['childs'],
+        infants: result['infants'],
+      );
     }
   }
 
@@ -131,18 +209,72 @@ class RoundTripFormViewModel extends ChangeNotifier {
     }
   }
 
+  SearchTicketsTemp createSearchTicketsTemp() {
+    String? formattedDepartureDate = departureDate != null
+        ? DateFormat('yyyy-MM-dd').format(departureDate!)
+        : null;
+    String? formattedreturnDate = departureDate != null
+        ? DateFormat('yyyy-MM-dd').format(departureDate!)
+        : null;
+    // Create the SearchTicketsTemp object
+    SearchTicketsTemp searchTicketsTemp = SearchTicketsTemp(
+      departingDate: formattedDepartureDate,
+      returningDate: formattedreturnDate,
+      passengerAdults: passengerAdults,
+      passengerChilds: passengerChilds,
+      passengerInfant: passengerInfant,
+      departureAirportCode: departureAirport?['code'],
+      arrivalAirportCode: arrivalAirport?['code'],
+      seatClass: seatClass,
+      isRoundTrip: true,
+    );
+
+    // Log the data for debugging
+    print('SearchTicketsTemp created:');
+    print('Departing Date: ${searchTicketsTemp.departingDate}');
+    print('Returning Date: ${searchTicketsTemp.returningDate}');
+    print('Passenger Adults: ${searchTicketsTemp.passengerAdults}');
+    print('Passenger Childs: ${searchTicketsTemp.passengerChilds}');
+    print('Passenger Infants: ${searchTicketsTemp.passengerInfant}');
+    print('Departure Airport Code: ${searchTicketsTemp.departureAirportCode}');
+    print('Arrival Airport Code: ${searchTicketsTemp.arrivalAirportCode}');
+    print('Seat Class: ${searchTicketsTemp.seatClass}');
+    print('Is Round Trip: ${searchTicketsTemp.isRoundTrip}');
+
+    return searchTicketsTemp;
+  }
+
   void searchFlights(BuildContext context) {
     if (departureAirport == null || arrivalAirport == null) {
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text("Lỗi"),
-          content: const Text("Vui lòng chọn cả điểm đi và điểm đến."),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text("OK")),
-          ],
-        ),
-      );
+      _showErrorDialog(context, "Vui lòng chọn điểm đi và điểm đến.", false);
+      return;
     }
+
+    if (departureDate == null || returnDate == null) {
+      _showErrorDialog(context, "Vui lòng chọn ngày đi và ngày về.", false);
+      return;
+    }
+
+    final searchData = createSearchTicketsTemp();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FlightTicketScreen(
+          departureAirport: "${departureAirport?['city']} (${departureAirport?['code']})",
+          arrivalAirport: "${arrivalAirport?['city']} (${arrivalAirport?['code']})",
+          departureDate: departureDate!.toLocal().toString().split(' ')[0],
+          returnDate: returnDate!.toLocal().toString().split(' ')[0],
+          passengers: passengerAdults + passengerChilds + passengerInfant,
+          seatClass: seatClass,
+        ),
+      ),
+    );
+  }
+
+  Future<void> clearTempData() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    notifyListeners();
   }
 }

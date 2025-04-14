@@ -4,12 +4,25 @@ import '../../../core/constants/constants.dart';
 import '../../viewmodel/searchmodel/search_passenger_view_model.dart';
 
 class PassengerSelectionSheet extends StatelessWidget {
-  const PassengerSelectionSheet({super.key});
+  final int initialAdults;
+  final int initialChilds;
+  final int initialInfants;
+
+  const PassengerSelectionSheet({
+    super.key,
+    this.initialAdults = 1,
+    this.initialChilds = 0,
+    this.initialInfants = 0,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => PassengerSelectionViewModel(),
+      create: (_) => PassengerSelectionViewModel(
+        initialAdults: initialAdults,
+        initialChildren: initialChilds,
+        initialInfants: initialInfants,
+      ),
       child: Consumer<PassengerSelectionViewModel>(
         builder: (context, viewModel, child) {
           return Container(
@@ -49,53 +62,6 @@ class PassengerSelectionSheet extends StatelessWidget {
       ),
     ),
   );
-
-  Widget buildActionButtons(BuildContext context, PassengerSelectionViewModel viewModel) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        buildActionButton(
-          label: "Cancel",
-          color: const Color(0xFFF2F2F2),
-          textColor: AppColors.primaryColor,
-          onPressed: () => Navigator.pop(context),
-        ),
-        const SizedBox(width: 16),
-        buildActionButton(
-          label: "Select",
-          color: AppColors.primaryColor,
-          textColor: const Color(0xFFF2F2F2),
-          onPressed: () {
-            String? errorMessage = viewModel.validatePassengers();
-
-            if (errorMessage == null) {
-              Navigator.pop(context, {
-                "totalPassengers": viewModel.totalPassengers,
-              });
-            } else {
-              showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text('Lỗi'),
-                    content: Text(errorMessage),
-                    actions: <Widget>[
-                      TextButton(
-                        child: const Text('OK'),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                    ],
-                  );
-                },
-              );
-            }
-          },
-        ),
-      ],
-    );
-  }
 
   Widget buildCounter(String label, String subLabel, int count, Function(int) onUpdate) {
     return Padding(
@@ -152,6 +118,46 @@ class PassengerSelectionSheet extends StatelessWidget {
     );
   }
 
+  Widget buildActionButtons(BuildContext context, PassengerSelectionViewModel viewModel) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        buildActionButton(
+          label: "Cancel",
+          color: const Color(0xFFF2F2F2),
+          textColor: AppColors.primaryColor,
+          onPressed: () => Navigator.pop(context),
+        ),
+        const SizedBox(width: 16),
+        buildActionButton(
+          label: "Select",
+          color: AppColors.primaryColor,
+          textColor: const Color(0xFFF2F2F2),
+          onPressed: () {
+            String? error = viewModel.validatePassengers();
+            if (error == null) {
+              Navigator.pop(context, viewModel.getPassengerSelection());
+            } else {
+              showDialog(
+                context: context,
+                builder: (_) => AlertDialog(
+                  title: const Text("Lỗi"),
+                  content: Text(error),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("OK"),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+
   Widget buildActionButton({
     required String label,
     required Color color,
@@ -177,14 +183,4 @@ class PassengerSelectionSheet extends StatelessWidget {
       ),
     );
   }
-}
-
-void showPassengerSelectionSheet(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-    ),
-    builder: (context) => const PassengerSelectionSheet(),
-  );
 }

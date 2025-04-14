@@ -2,16 +2,114 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
-import '../../../core/widget/app_bar_choose_date_widget.dart';
+import '../../../core/constants/text_styles.dart';
 import '../../viewmodel/searchmodel/selection_date_view_model.dart';
 
+class AppBarChooseDateWidget extends StatelessWidget implements PreferredSizeWidget {
+  final VoidCallback onBack;
+  final String departingDate;
+  final String returningDate;
+  final Function(String) onDepartingDateChanged;
+  final Function(String) onReturningDateChanged;
+
+  const AppBarChooseDateWidget({
+    required this.onBack,
+    this.departingDate = 'Departing Date',
+    this.returningDate = 'Returning Date',
+    required this.onDepartingDateChanged,
+    required this.onReturningDateChanged,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PreferredSize(
+      preferredSize: preferredSize,
+      child: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: AppColors.primaryColor,
+        flexibleSpace: Padding(
+          padding: const EdgeInsets.only(top: 40),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    onPressed: onBack,
+                  ),
+                  const SizedBox(width: 90),
+                  Text(
+                    "Choose date",
+                    style: AppTextStyle.heading4.copyWith(
+                      color: const Color(0xFFF2F2F2),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildDateSelector(departingDate, onDepartingDateChanged, context),
+                  const SizedBox(width: 40),
+                  Image.asset(
+                    'assets/icons/Vector.png',
+                    width: 18,
+                    height: 18,
+                  ),
+                  const SizedBox(width: 40),
+                  _buildDateSelector(returningDate, onReturningDateChanged, context),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateSelector(String date, Function(String) onDateChanged, BuildContext context) {
+    return GestureDetector(
+      onTap: () async {
+        final selectedDates = await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SelectionDate(isRoundTrip: true),
+          ),
+        );
+
+        if (selectedDates is Map<String, DateTime?>) {
+          if (selectedDates['departingDate'] != null) {
+            onDateChanged(
+              DateFormat('EEE, MMM d, y').format(selectedDates['departingDate']!),
+            );
+          }
+        }
+      },
+      child: Text(
+        date,
+        style: AppTextStyle.paragraph1.copyWith(
+          color: Colors.grey.withOpacity(0.6),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(80);
+}
+
 class SelectionDate extends StatelessWidget {
-  const SelectionDate({super.key});
+  final bool isRoundTrip;
+
+  const SelectionDate({super.key, required this.isRoundTrip});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => SelectionDateViewModel(),
+      create: (context) => SelectionDateViewModel(isRoundTrip: isRoundTrip),
       child: Consumer<SelectionDateViewModel>(
         builder: (context, viewModel, child) {
           return Scaffold(
@@ -19,10 +117,10 @@ class SelectionDate extends StatelessWidget {
               onBack: () => Navigator.pop(context),
               departingDate: viewModel.departingDate != null
                   ? DateFormat('EEE, MMM d yyyy').format(viewModel.departingDate!)
-                  : "Departing Date", // Hiển thị ngày đi hoặc "Departing Date"
+                  : "Departing Date",
               returningDate: viewModel.returningDate != null
                   ? DateFormat('EEE, MMM d yyyy').format(viewModel.returningDate!)
-                  : "Returning Date", // Hiển thị ngày về hoặc "Returning Date"
+                  : "Returning Date",
               onDepartingDateChanged: viewModel.updateDepartingDate,
               onReturningDateChanged: viewModel.updateReturningDate,
             ),
@@ -42,47 +140,53 @@ class SelectionDate extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ))
-                        .toList(), // Hiển thị các ngày trong tuần
+                        .toList(),
                   ),
                 ),
                 Expanded(
                   child: ListView.builder(
                     itemCount: viewModel.months.length,
                     itemBuilder: (context, index) {
+                      DateTime month = viewModel.months[index];
                       return MonthView(
-                        currentMonth: viewModel.months[index],
+                        currentMonth: month,
                         departingDate: viewModel.departingDate,
                         returningDate: viewModel.returningDate,
-                        onDateSelected: viewModel.onDateSelected,
-                      ); // Hiển thị lịch theo tháng
+                        onDateSelected: (date) {
+                          viewModel.onDateSelected(date);
+                        },
+                      );
                     },
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(10),
-                  child: ElevatedButton(
-                    onPressed: viewModel.departingDate != null &&
-                        viewModel.returningDate != null
-                        ? () {
-                      Navigator.pop(context, {
-                        'departingDate': viewModel.departingDate,
-                        'returningDate': viewModel.returningDate,
-                      });
-                    }
-                        : null, // Cho phép chọn khi cả ngày đi và về đã được chọn
-                    style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(350, 40),
-                      backgroundColor: AppColors.primaryColor,
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 15),
-                    ),
-                    child: const Text(
-                      'Select',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFF2F2F2),
+                  padding: const EdgeInsets.only(bottom: 15),
+                  child: SizedBox(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        if (viewModel.departingDate != null) {
+                          Navigator.pop(context, {
+                            'departingDate': viewModel.departingDate,
+                            'returningDate': viewModel.returningDate,
+                          });
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        minimumSize: Size(300, 25),
+                        backgroundColor: AppColors.primaryColor,
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Select Date',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFFF2F2F2),
+                          fontFamily: 'Poppins',
+                        ),
                       ),
                     ),
                   ),
@@ -126,7 +230,7 @@ class MonthView extends StatelessWidget {
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
-          ), // Hiển thị tên tháng và năm
+          ),
         ),
         GridView.builder(
           padding: const EdgeInsets.all(10),
@@ -145,7 +249,7 @@ class MonthView extends StatelessWidget {
               departingDate: departingDate,
               returningDate: returningDate,
               onDateSelected: onDateSelected,
-            ); // Hiển thị các ô ngày
+            );
           },
         ),
         const SizedBox(height: 20),
@@ -157,15 +261,14 @@ class MonthView extends StatelessWidget {
     List<DateTime> dates = [];
     int daysInMonth = DateTime(currentMonth.year, currentMonth.month + 1, 0).day;
     int firstWeekday = DateTime(currentMonth.year, currentMonth.month, 1).weekday;
-    firstWeekday = firstWeekday == 7 ? 0 : firstWeekday;
-
+    firstWeekday = firstWeekday - 1;
     for (int i = 0; i < firstWeekday; i++) {
-      dates.add(DateTime(0)); // Thêm các ô trống để căn chỉnh lịch
+      dates.add(DateTime(0));
     }
 
     dates.addAll(List.generate(daysInMonth, (i) {
       return DateTime(currentMonth.year, currentMonth.month, i + 1);
-    })); // Thêm các ngày trong tháng
+    }));
 
     return dates;
   }
@@ -198,31 +301,35 @@ class DateCell extends StatelessWidget {
 
     if (isDeparting || isReturning) {
       backgroundColor = AppColors.primaryColor;
-      textColor = const Color(0xFFE6E6E6); // Màu sắc cho ngày đi và về
+      textColor = const Color(0xFFE6E6E6);
     } else if (isBetween) {
       backgroundColor = const Color(0xFFC8D1F0);
-      textColor = AppColors.neutralColor; // Màu sắc cho ngày giữa đi và về
+      textColor = AppColors.neutralColor;
     } else if (isPast) {
-      textColor = const Color(0xFF9C9C9C); // Màu sắc cho ngày quá khứ
+      textColor = const Color(0xFF9C9C9C);
     }
 
     BorderRadius borderRadius;
-    if (isDeparting) {
-      borderRadius = const BorderRadius.only(
-        topLeft: Radius.circular(50),
-        bottomLeft: Radius.circular(50),
-      );
-    } else if (isReturning) {
+    if (isDeparting && returningDate == null) {
+      borderRadius = BorderRadius.circular(50);
+    } else if (isReturning && departingDate != null) {
       borderRadius = const BorderRadius.only(
         topRight: Radius.circular(50),
         bottomRight: Radius.circular(50),
       );
+    } else if (isDeparting && returningDate != null) {
+      borderRadius = const BorderRadius.only(
+        topLeft: Radius.circular(50),
+        bottomLeft: Radius.circular(50),
+      );
     } else {
-      borderRadius = BorderRadius.zero; // Hình dạng ô ngày
+      borderRadius = BorderRadius.zero;
     }
 
     return GestureDetector(
-      onTap: date.year != 0 ? () => onDateSelected(date) : null, // Cho phép chọn nếu ngày hợp lệ
+      onTap: date.year != 0 && !isPast
+          ? () => onDateSelected(date) // Gọi callback để chọn hoặc bỏ chọn
+          : null,
       child: date.year != 0
           ? Container(
         alignment: Alignment.center,
@@ -238,9 +345,10 @@ class DateCell extends StatelessWidget {
             fontWeight: FontWeight.bold,
             color: textColor,
           ),
-        ), // Hiển thị số ngày
+        ),
       )
-          : const SizedBox(), // Ô trống nếu ngày không hợp lệ
+          : const SizedBox(),
     );
   }
 }
+

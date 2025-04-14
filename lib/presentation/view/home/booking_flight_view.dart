@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:booking_flight/core/widget/widgets.dart';
-import 'package:booking_flight/presentation/view/home/round_trip_form.dart';
-import 'package:booking_flight/presentation/view/home/one_way_trip_form.dart';
-import 'flight_discount.dart';
+import 'package:booking_flight/presentation/view/home/round_trip_form_view.dart';
+import 'package:booking_flight/presentation/view/home/one_way_trip_form_view.dart';
+import 'flight_discount_view.dart';
 import '../../viewmodel/home/booking_flight_view_model.dart';
 
 class BookingFlightScreen extends StatelessWidget {
