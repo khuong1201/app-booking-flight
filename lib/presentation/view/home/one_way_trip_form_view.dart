@@ -15,7 +15,7 @@ class OneWayTripForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<OneWayTripViewModel>(
       create: (_) => OneWayTripViewModel(),
-      child: Consumer<OneWayTripViewModel>( // Sử dụng OneWayTripViewModel thay vì OneWayFormViewModel
+      child: Consumer<OneWayTripViewModel>(
         builder: (context, viewModel, child) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(8),
@@ -64,28 +64,43 @@ class OneWayTripForm extends StatelessWidget {
                           const SectionTitle(title: 'Passenger'),
                           const SizedBox(height: 8),
                           CustomButton(
-                            hintText: "${viewModel.passengerAdults + viewModel.passengerChilds + viewModel.passengerInfant} passenger(s)",
+                            hintText: "${viewModel.totalPassenger()} passenger(s)",
                             assetPath: AppIcons.personMultiple,
-                            onTap: () async {
-                              final result = await showModalBottomSheet<Map<String, int>>(
-                                context: context,
-                                shape: const RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-                                ),
-                                builder: (context) => PassengerSelectionSheet(
-                                  initialAdults: viewModel.passengerAdults,
-                                  initialChilds: viewModel.passengerChilds,
-                                  initialInfants: viewModel.passengerInfant,
-                                ),
-                              );
-                              if (result != null && result.containsKey('adults') && result.containsKey('childs') && result.containsKey('infants')) {
-                                viewModel.updatePassengerCount(
-                                  adults: result['adults']!,
-                                  childs: result['childs']!,
-                                  infants: result['infants']!,
+                              onTap: () async {
+                                final result = await showModalBottomSheet<Map<String, int>>(
+                                  context: context,
+                                  shape: const RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+                                  ),
+                                  builder: (context) => PassengerSelectionSheet(
+                                    initialAdults: viewModel.passengerAdults,
+                                    initialChilds: viewModel.passengerChilds,
+                                    initialInfants: viewModel.passengerInfants,
+                                  ),
                                 );
+
+                                // In ra giá trị của result để kiểm tra
+                                print("Result: $result");
+
+                                if (result != null &&
+                                    result.containsKey('adults') &&
+                                    result.containsKey('childs') &&
+                                    result.containsKey('infants')) {
+                                  // In ra kết quả để kiểm tra
+                                  print("Passenger Selection: $result");
+
+                                  // Cập nhật thông tin hành khách
+                                  viewModel.updatePassengerCount(
+                                    adults: result['adults']!,
+                                    childs: result['childs']!,
+                                    infants: result['infants']!,
+                                  );
+                                  print("dagoi update");
+                                } else {
+                                  // In ra thông báo nếu điều kiện không thỏa mãn
+                                  print("Result không hợp lệ: $result");
+                                }
                               }
-                            },
                           ),
                         ],
                       ),
@@ -139,4 +154,3 @@ class OneWayTripForm extends StatelessWidget {
     );
   }
 }
-

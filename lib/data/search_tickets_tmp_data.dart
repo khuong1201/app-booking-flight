@@ -3,7 +3,7 @@ class SearchTicketsTemp {
   final String? returningDate;
   final int passengerAdults;
   final int passengerChilds;
-  final int passengerInfant;
+  final int passengerInfants;
   final String? departureAirportCode;
   final String? arrivalAirportCode;
   final String seatClass;
@@ -14,7 +14,7 @@ class SearchTicketsTemp {
     required this.returningDate,
     required this.passengerAdults,
     required this.passengerChilds,
-    required this.passengerInfant,
+    required this.passengerInfants,
     required this.departureAirportCode,
     required this.arrivalAirportCode,
     required this.seatClass,

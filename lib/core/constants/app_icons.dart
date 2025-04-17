@@ -1,3 +1,4 @@
+import 'package:flutter_svg/flutter_svg.dart';
 class AppIcons{
   static const String airplane = "assets/icons/Airplane.png";
   static const String airplaneLanding = "assets/icons/Airplane Landing.png";
@@ -24,6 +25,7 @@ class AppIcons{
   static const String streamlineEarthAirplane = "assets/icons/streamline_earth-airplane.png";
   static const String clock = "assets/icons/hugeicons-clock-03.png";
   static const String list = "assets/icons/List.png";
+  static const String searchNewFlight = "assets/icons/material-symbols-light_arrow-drop-down-rounded.svg";
 }
 class AppLogo{
   static  const String primiter = "assets/logo/primiter.png";

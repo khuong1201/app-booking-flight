@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:booking_flight/core/constants/constants.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import '../../../core/widget/tab_bar_widget.dart';
 import '../../../data/search_flight_Data.dart';
+import '../../../data/search_tickets_tmp_data.dart';
 import '../../viewmodel/searchmodel/search_flight_tiket_view_model.dart';
+import '../home/one_way_trip_form_view.dart';
+import '../home/round_trip_form_view.dart';
 
-// FlightTicketCard Widget
 class FlightTicketCard extends StatelessWidget {
   final FlightTicketViewModel viewModel;
   final bool isBestCheap;
-  const FlightTicketCard({super.key, required this.viewModel, this.isBestCheap = false,});
+  const FlightTicketCard({
+    super.key,
+    required this.viewModel,
+    this.isBestCheap = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,14 +27,16 @@ class FlightTicketCard extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: isBestCheap ? AppColors.secondaryColor : Color(0xFF9C9C9C), width: 1.5),
+        border: Border.all(
+            color: isBestCheap ? AppColors.secondaryColor : Color(0xFF9C9C9C),
+            width: 1.5),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.stretch, // Stretch to fill width
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between elements
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Image.asset(
                 viewModel.airlineLogo,
@@ -43,7 +53,7 @@ class FlightTicketCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         buildFlightTimeColumn(
                             viewModel.departureTime,
@@ -76,9 +86,9 @@ class FlightTicketCard extends StatelessWidget {
                             ),
                             Text('Direct',
                                 style: TextStyle(
-                                  fontSize: 10,
-                                  color: Color(0xFF9C9C9C),
-                                )),
+                                    fontSize: 10,
+                                    color: Color(0xFF9C9C9C),
+                                    fontWeight: FontWeight.normal)),
                           ],
                         ),
                         buildFlightTimeColumn(
@@ -99,19 +109,21 @@ class FlightTicketCard extends StatelessWidget {
               SizedBox(width: 10),
               Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.end, // Align to the end
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(viewModel.price,
-                      style: AppTextStyle.body3.copyWith(color: AppColors.secondaryColor)),
+                      style: AppTextStyle.body3
+                          .copyWith(color: AppColors.secondaryColor)),
                   Text(viewModel.passengerCount,
-                      style: TextStyle(color: Color(0xFF9C9C9C), fontSize: 12)),
+                      style:
+                      TextStyle(color: Color(0xFF9C9C9C), fontSize: 12)),
                 ],
               ),
             ],
           ),
           SizedBox(height: 12),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space between
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(viewModel.airlineName,
                   style: TextStyle(fontWeight: FontWeight.bold)),
@@ -155,6 +167,9 @@ class FlightTicketScreen extends StatefulWidget {
   final String returnDate;
   final int passengers;
   final String seatClass;
+  final int passengerAdults;
+  final int passengerChilds;
+  final int passengerInfants;
 
   const FlightTicketScreen({
     super.key,
@@ -164,6 +179,9 @@ class FlightTicketScreen extends StatefulWidget {
     required this.returnDate,
     required this.passengers,
     required this.seatClass,
+    required this.passengerAdults,
+    required this.passengerChilds,
+    required this.passengerInfants,
   });
 
   @override
@@ -171,141 +189,255 @@ class FlightTicketScreen extends StatefulWidget {
 }
 
 class _FlightTicketScreenState extends State<FlightTicketScreen> {
-  late List<FlightTicketViewModel> viewModelList;
+  late SearchTicketsTemp currentSearchData;
+  late List<FlightTicketViewModel> allViewModelList;
   late List<FlightTicketViewModel> filteredList;
   FlightTicketViewModel? cheapestFlight;
+  bool isLoading = true;
+  int _tabIndex = 0; // State for the tab bar
 
   @override
   void initState() {
     super.initState();
-    // Fetch data based on the inputs from the previous screen
-    viewModelList = FlightTicketViewModel.fetchAllData(flightDataList);
-    filteredList = List.from(viewModelList);
-    cheapestFlight = FlightTicketViewModel.findCheapestFlight(viewModelList); // Find the cheapest flight
-    filterFlights(); // Filter the data based on the passed parameters
+    _initializeAndFilterFlights();
   }
 
-  void filterFlights() {
-    print('Filtering flights...');
+  String _extractCode(String airportInfo) {
+    RegExp regExp = RegExp(r'\((.*?)\)');
+    Match? match = regExp.firstMatch(airportInfo);
+    return match?.group(1) ?? airportInfo;
+  }
+
+  void _initializeAndFilterFlights() {
+    setState(() => isLoading = true);
+    currentSearchData = SearchTicketsTemp(
+      departureAirportCode: _extractCode(widget.departureAirport),
+      arrivalAirportCode: _extractCode(widget.arrivalAirport),
+      departingDate: widget.departureDate,
+      returningDate:
+      widget.returnDate.isNotEmpty ? widget.returnDate : null,
+      passengerAdults: widget.passengerAdults,
+      passengerChilds: widget.passengerChilds,
+      passengerInfants: widget.passengerInfants,
+      seatClass: widget.seatClass,
+      isRoundTrip: widget.returnDate.isNotEmpty,
+    );
+
+    allViewModelList =
+        FlightTicketViewModel.fetchAllData(flightDataList, currentSearchData);
+
+    print(
+        'Filtering flights for: ${widget.departureAirport} -> ${widget.arrivalAirport} on ${widget.departureDate}');
     filteredList = FlightTicketViewModel.filterFlights(
-      flights: viewModelList,
-      departureCode: widget.departureAirport,
-      arrivalCode: widget.arrivalAirport,
+      flights: allViewModelList,
+      departureInfo: widget.departureAirport,
+      arrivalInfo: widget.arrivalAirport,
       date: widget.departureDate,
     );
-    print('Filtered flights: ${filteredList.length}');
-    setState(() {}); // Update UI after filtering
+    print('Found ${filteredList.length} matching flights.');
+
+    cheapestFlight =
+        FlightTicketViewModel.findCheapestFlight(filteredList);
+
+    setState(() => isLoading = false);
   }
 
+  void _showSearchOptionsDialog(BuildContext context) {
+    int localTabIndex = _tabIndex;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: EdgeInsets.only(top: 0, left: 0, right: 0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setModalState) {
+              return Container(
+                color: AppColors.primaryColor, // Màu nền của toàn bộ dialog
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Search new flight',
+                          style: AppTextStyle.paragraph2.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white, // Màu nền của CustomTabBar
+                        borderRadius: BorderRadius.all(Radius.circular(8)),
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: CustomTabBar(
+                              currentIndex: localTabIndex,
+                              onTap: (index) {
+                                setModalState(() {
+                                  localTabIndex = index;
+                                });
+                              },
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: IndexedStack(
+                              index: localTabIndex,
+                              children: const [
+                                RoundTripForm(),
+                                OneWayTripForm(),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
   @override
   Widget build(BuildContext context) {
-    DateTime parsedDepartureDate = DateTime.parse(widget.departureDate);
-    String formattedDepartureDate = DateFormat('EEE, d MMM ').format(parsedDepartureDate);
+    String formattedDepartureDate = "Date Error";
+    try {
+      DateTime parsedDepartureDate = DateTime.parse(widget.departureDate);
+      formattedDepartureDate =
+          DateFormat('EEE, d MMM').format(parsedDepartureDate);
+    } catch (e) {
+      print("Error parsing widget.departureDate: ${widget.departureDate}");
+    }
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primaryColor,
+        toolbarHeight: 72,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Text(
-                  widget.departureAirport,
-                  style: AppTextStyle.paragraph2.copyWith(color: const Color(0xFFF2F2F2)),
-                ),
-                const SizedBox(width: 8),
-                Image.asset(
-                  'assets/icons/Airplane.png',
-                  width: 16,
-                  height: 16,
-                  color: Colors.white,
-                  colorBlendMode: BlendMode.srcIn,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  widget.arrivalAirport,
-                  style: AppTextStyle.paragraph2.copyWith(color: const Color(0xFFF2F2F2)),
+                Flexible(
+                  child: Text(
+                    "${currentSearchData.departureAirportCode ?? 'N/A'}  →  ${currentSearchData.arrivalAirportCode ?? 'N/A'}",
+                    style: AppTextStyle.paragraph2.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
+            SizedBox(
+              height: 8,
+            ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Text(
-                  "$formattedDepartureDate. ${widget.passengers} pax. ${widget.seatClass}",
-                  style: AppTextStyle.caption1.copyWith(color: Color(0xFFD3D3D3)),
+                Flexible(
+                  child: Text(
+                    "$formattedDepartureDate, ${widget.passengers} pax, ${widget.seatClass}",
+                    style:
+                    AppTextStyle.caption1.copyWith(color: Color(0xFFE0E0E0)),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
-                const Icon(Icons.keyboard_arrow_down, color: Colors.white),
+                const SizedBox(
+                  width: 8,
+                ),
+                InkWell(
+                  onTap: () {
+                    _showSearchOptionsDialog(context);
+                  },
+                  child: SvgPicture.asset(
+                    'assets/icons/material-symbols-light_arrow-drop-down-rounded.svg',
+                    width: 16,
+                    height: 16,
+                    fit: BoxFit.contain,
+                  ),
+                ),
               ],
             ),
           ],
         ),
       ),
-      body: Column(
-        children: [
-          // Nếu có chuyến bay rẻ nhất
-          if (cheapestFlight != null) ...[
-            Padding(
-              padding: const EdgeInsets.only(left: 14.0, top: 10.0, bottom: 10.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Best flight from your search',
-                  style: AppTextStyle.paragraph2,
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ),
-            FlightTicketCard(viewModel: cheapestFlight!, isBestCheap: true),
-          ],
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : _buildFlightList(),
+    );
+  }
 
-          // Nếu có danh sách chuyến bay lọc
-          if (filteredList.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.only(left: 14.0, top: 10.0, bottom: 10.0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'All flight',
-                  style: AppTextStyle.paragraph2,
-                  textAlign: TextAlign.left,
-                ),
-              ),
-            ),
-            ListView.builder(
-              itemCount: filteredList.length,
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                return FlightTicketCard(viewModel: filteredList[index]);
-              },
-            ),
-          ],
+  Widget _buildFlightList() {
+    if (filteredList.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Text(
+            'No flights found matching your criteria.\nPlease try different dates or airports.',
+            textAlign: TextAlign.center,
+            style: AppTextStyle.paragraph1.copyWith(color: Colors.grey[700]),
+          ),
+        ),
+      );
+    }
 
-          // Nếu KHÔNG có best flight và cũng không có danh sách chuyến bay
-          if (cheapestFlight == null && filteredList.isEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 50),
-              child: Center(
-                child: Text(
-                  'No flights available',
-                  style: TextStyle(fontSize: 18),
-                ),
-              ),
+    return ListView(
+      padding: EdgeInsets.only(top: 8),
+      children: [
+        if (cheapestFlight != null) ...[
+          Padding(
+            padding:
+            const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 4.0),
+            child: Text(
+              'Best flight from your search',
+              style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
             ),
+          ),
+          GestureDetector(
+            onTap: () {
+              cheapestFlight!.showTicketDetailsSheet(context);
+            },
+            child: FlightTicketCard(
+                viewModel: cheapestFlight!, isBestCheap: true),
+          ),
+          Divider(indent: 16, endIndent: 16, height: 20),
         ],
-      ),
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 4.0),
+          child: Text(
+            cheapestFlight != null ? 'All flights' : 'Available flights',
+            style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
+          ),
+        ),
+        ...filteredList
+            .map((flight) => GestureDetector(
+          onTap: () {
+            flight.showTicketDetailsSheet(context);
+          },
+          child:
+          FlightTicketCard(viewModel: flight, isBestCheap: false),
+        ))
+            .toList(),
+        SizedBox(height: 20),
+      ],
     );
   }
 }
-
-
-

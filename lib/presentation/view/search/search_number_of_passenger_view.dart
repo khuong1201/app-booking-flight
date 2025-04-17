@@ -20,7 +20,7 @@ class PassengerSelectionSheet extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) => PassengerSelectionViewModel(
         initialAdults: initialAdults,
-        initialChildren: initialChilds,
+        initialChilds: initialChilds,
         initialInfants: initialInfants,
       ),
       child: Consumer<PassengerSelectionViewModel>(

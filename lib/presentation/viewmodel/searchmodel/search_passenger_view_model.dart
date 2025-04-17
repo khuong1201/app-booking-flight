@@ -7,10 +7,10 @@ class PassengerSelectionViewModel extends ChangeNotifier {
 
   PassengerSelectionViewModel({
     int initialAdults = 1,
-    int initialChildren = 0,
+    int initialChilds = 0,
     int initialInfants = 0,
   })  : _adultCount = initialAdults,
-        _childCount = initialChildren,
+        _childCount = initialChilds,
         _infantCount = initialInfants;
 
   int get adultCount => _adultCount;
@@ -22,6 +22,7 @@ class PassengerSelectionViewModel extends ChangeNotifier {
   void updateAdultCount(int value) {
     if (value >= 1 && value != _adultCount) {
       _adultCount = value;
+      print('Updated adult count: $_adultCount'); // Debugging print
       notifyListeners();
     }
   }
@@ -29,6 +30,7 @@ class PassengerSelectionViewModel extends ChangeNotifier {
   void updateChildCount(int value) {
     if (value >= 0 && value != _childCount) {
       _childCount = value;
+      print('Updated child count: $_childCount'); // Debugging print
       notifyListeners();
     }
   }
@@ -36,31 +38,31 @@ class PassengerSelectionViewModel extends ChangeNotifier {
   void updateInfantCount(int value) {
     if (value >= 0 && value != _infantCount) {
       _infantCount = value;
+      print('Updated infant count: $_infantCount'); // Debugging print
       notifyListeners();
     }
   }
 
   String? validatePassengers() {
-    if (totalPassengers > 9) {
-      return 'Tổng số hành khách không được vượt quá 9.';
-    }
+    final validationResult = totalPassengers > 9
+        ? 'Tổng số hành khách không được vượt quá 9.'
+        : _infantCount > _adultCount
+        ? 'Số lượng trẻ sơ sinh không thể lớn hơn số lượng người lớn.'
+        : _adultCount < 1
+        ? 'Phải có ít nhất 1 người lớn.'
+        : null;
 
-    if (_infantCount > _adultCount) {
-      return 'Số lượng trẻ sơ sinh không thể lớn hơn số lượng người lớn.';
-    }
-
-    if (_adultCount < 1) {
-      return 'Phải có ít nhất 1 người lớn.';
-    }
-
-    return null;
+    print('Validation result: $validationResult'); // Debugging print
+    return validationResult;
   }
 
   Map<String, int> getPassengerSelection() {
-    return {
+    final selection = {
       'adults': _adultCount,
-      'children': _childCount,
+      'childs': _childCount,
       'infants': _infantCount,
     };
+    print('Passenger selection: $selection'); // Debugging print
+    return selection;
   }
 }

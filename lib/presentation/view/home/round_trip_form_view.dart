@@ -77,7 +77,7 @@ class RoundTripForm extends StatelessWidget {
                           const SectionTitle(title: 'Passenger'),
                           const SizedBox(height: 8),
                           CustomButton(
-                            hintText: "${viewModel.passengerAdults + viewModel.passengerChilds + viewModel.passengerInfant} passenger(s)",
+                            hintText: "${viewModel.passengerAdults + viewModel.passengerChilds + viewModel.passengerInfants} passenger(s)",
                             assetPath: AppIcons.personMultiple,
                             onTap: () async {
                               final result = await showModalBottomSheet<Map<String, int>>(
@@ -88,7 +88,7 @@ class RoundTripForm extends StatelessWidget {
                                 builder: (context) => PassengerSelectionSheet(
                                   initialAdults: viewModel.passengerAdults,
                                   initialChilds: viewModel.passengerChilds,
-                                  initialInfants: viewModel.passengerInfant,
+                                  initialInfants: viewModel.passengerInfants,
                                 ),
                               );
                               if (result != null && result.containsKey('adults') && result.containsKey('childs') && result.containsKey('infants')) {

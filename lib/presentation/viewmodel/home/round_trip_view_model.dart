@@ -16,12 +16,8 @@ class RoundTripFormViewModel extends ChangeNotifier {
   DateTime? returnDate;
   int passengerAdults = 1;
   int passengerChilds = 0;
-  int passengerInfant = 0;
+  int passengerInfants = 0;
   String seatClass = "Economy";
-
-  RoundTripFormViewModel() {
-    _loadTempData();
-  }
 
   Future<void> _loadTempData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -32,7 +28,7 @@ class RoundTripFormViewModel extends ChangeNotifier {
     returnDate = await _loadDateData(prefs, 'round_trip_return_date');
     passengerAdults = prefs.getInt('round_trip_passenger_adults') ?? 1;
     passengerChilds = prefs.getInt('round_trip_passenger_childs') ?? 0;
-    passengerInfant = prefs.getInt('round_trip_passenger_infant') ?? 0;
+    passengerInfants = prefs.getInt('round_trip_passenger_infant') ?? 0;
     seatClass = prefs.getString('round_trip_seat_class') ?? "Economy";
 
     notifyListeners();
@@ -75,7 +71,7 @@ class RoundTripFormViewModel extends ChangeNotifier {
 
     await prefs.setInt('round_trip_passenger_adults', passengerAdults);
     await prefs.setInt('round_trip_passenger_childs', passengerChilds);
-    await prefs.setInt('round_trip_passenger_infant', passengerInfant);
+    await prefs.setInt('round_trip_passenger_infant', passengerInfants);
     await prefs.setString('round_trip_seat_class', seatClass);
   }
 
@@ -108,7 +104,7 @@ class RoundTripFormViewModel extends ChangeNotifier {
   void updatePassengerCount({required int adults, required int childs, required int infants}) {
     passengerAdults = adults;
     passengerChilds = childs;
-    passengerInfant = infants;
+    passengerInfants = infants;
     _saveTempData();
     notifyListeners();
   }
@@ -222,7 +218,7 @@ class RoundTripFormViewModel extends ChangeNotifier {
       returningDate: formattedreturnDate,
       passengerAdults: passengerAdults,
       passengerChilds: passengerChilds,
-      passengerInfant: passengerInfant,
+      passengerInfants: passengerInfants,
       departureAirportCode: departureAirport?['code'],
       arrivalAirportCode: arrivalAirport?['code'],
       seatClass: seatClass,
@@ -235,7 +231,7 @@ class RoundTripFormViewModel extends ChangeNotifier {
     print('Returning Date: ${searchTicketsTemp.returningDate}');
     print('Passenger Adults: ${searchTicketsTemp.passengerAdults}');
     print('Passenger Childs: ${searchTicketsTemp.passengerChilds}');
-    print('Passenger Infants: ${searchTicketsTemp.passengerInfant}');
+    print('Passenger Infants: ${searchTicketsTemp.passengerInfants}');
     print('Departure Airport Code: ${searchTicketsTemp.departureAirportCode}');
     print('Arrival Airport Code: ${searchTicketsTemp.arrivalAirportCode}');
     print('Seat Class: ${searchTicketsTemp.seatClass}');
@@ -265,8 +261,11 @@ class RoundTripFormViewModel extends ChangeNotifier {
           arrivalAirport: "${arrivalAirport?['city']} (${arrivalAirport?['code']})",
           departureDate: departureDate!.toLocal().toString().split(' ')[0],
           returnDate: returnDate!.toLocal().toString().split(' ')[0],
-          passengers: passengerAdults + passengerChilds + passengerInfant,
+          passengers: passengerAdults + passengerChilds + passengerInfants,
           seatClass: seatClass,
+          passengerAdults: passengerAdults,
+          passengerChilds: passengerChilds,
+          passengerInfants: passengerInfants,
         ),
       ),
     );

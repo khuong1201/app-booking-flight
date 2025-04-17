@@ -36,7 +36,7 @@ final List<FlightData> flightDataList = [
     price: '1.571.063 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-12',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/vn airlines.png',
@@ -48,7 +48,7 @@ final List<FlightData> flightDataList = [
     price: '1.771.560 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-12',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/Vietravel-Airlines.png',
@@ -60,7 +60,7 @@ final List<FlightData> flightDataList = [
     price: '1.771.560 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-12',
+    departureDate: '2025-04-16',
   ),
 
   // New flights
@@ -74,7 +74,7 @@ final List<FlightData> flightDataList = [
     price: '1.650.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-13',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/VietJet-Air.png',
@@ -86,7 +86,7 @@ final List<FlightData> flightDataList = [
     price: '2.000.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-13',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/Vietravel-Airlines.png',
@@ -98,7 +98,7 @@ final List<FlightData> flightDataList = [
     price: '1.950.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-13',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/vn airlines.png',
@@ -110,7 +110,7 @@ final List<FlightData> flightDataList = [
     price: '2.200.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-13',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/VietJet-Air.png',
@@ -122,7 +122,7 @@ final List<FlightData> flightDataList = [
     price: '2.150.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-14',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/Bamboo-Airways-V.png',
@@ -134,7 +134,7 @@ final List<FlightData> flightDataList = [
     price: '2.100.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-14',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/VietJet-Air.png',
@@ -146,7 +146,7 @@ final List<FlightData> flightDataList = [
     price: '2.350.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-15',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/VietJet-Air.png',
@@ -158,7 +158,7 @@ final List<FlightData> flightDataList = [
     price: '2.300.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-15',
+    departureDate: '2025-04-16',
   ),
   FlightData(
     airlineLogo: 'assets/logo/Bamboo-Airways-V.png',
@@ -170,7 +170,7 @@ final List<FlightData> flightDataList = [
     price: '2.250.000 VND',
     passengerCount: '1 passenger',
     duration: '2h 5m',
-    departureDate: '2025-04-15',
+    departureDate: '2025-04-16',
   ),
 
   // Additional flights with different airports
@@ -184,7 +184,7 @@ final List<FlightData> flightDataList = [
     price: '1.800.000 VND',
     passengerCount: '1 passenger',
     duration: '1h 30m',
-    departureDate: '2025-04-16',
+    departureDate: '2025-04-17',
   ),
   FlightData(
     airlineLogo: 'assets/logo/VietJet-Air.png',

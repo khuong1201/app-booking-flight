@@ -82,7 +82,7 @@ class AppBarSearchWidget extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 8),
           /// Nút "Cancel"
           TextButton(
             onPressed: onCancel,
