@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'dart:convert'; // Added for JSON encoding
 
 import '../../../core/constants/constants.dart';
 import '../../../data/passenger_infor_model.dart';
-import '../../viewmodel/searchmodel/passenger_info_viewmodel.dart';
+import '../../viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
 
 class PassengerInfoScreen extends StatelessWidget {
   final int adultCount;
   final int childCount;
   final int infantCount;
   final String ticketPrice;
-  final String routerTrip; // Add this
-  final String logoAirPort; // Add this
+  final String routerTrip;
+  final String logoAirPort;
 
   const PassengerInfoScreen({
     super.key,
@@ -46,7 +47,6 @@ class _PassengerInfoBody extends StatefulWidget {
   final String logoAirPort;
   final String routerTrip;
   const _PassengerInfoBody({
-    super.key,
     required this.ticketPrice,
     required this.logoAirPort,
     required this.routerTrip,
@@ -155,7 +155,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       ),
       actions: const [
         TextButton(
-          onPressed: null, // No action specified
+          onPressed: null,
           child: Text('Help?', style: TextStyle(color: Colors.white)),
         ),
         SizedBox(width: 12),
@@ -221,63 +221,62 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          Text('${widget.ticketPrice}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          Text(widget.ticketPrice, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         ],
       ),
       children: <Widget>[
         Container(
-          width: 379,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8)),
-            color: Color(0xFFE3E8F7)
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        Image.asset(
-                          widget.logoAirPort,
-                          height: 40,
-                          width: 40,
-                          fit: BoxFit.contain,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(widget.routerTrip),
-                      ],
-                    ),
-                    Text('${widget.ticketPrice}'),
-                  ],
+            width: 379,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+                color: Color(0xFFE3E8F7)
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Image.asset(
+                            widget.logoAirPort,
+                            height: 40,
+                            width: 40,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(widget.routerTrip),
+                        ],
+                      ),
+                      Text(widget.ticketPrice),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(height: 2,),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: Divider(
-                  thickness: 1,
-                  color: AppColors.neutralColor,
+                SizedBox(height: 2,),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Divider(
+                    thickness: 1,
+                    color: AppColors.neutralColor,
+                  ),
                 ),
-              ),
-              SizedBox(height: 2,),
-              ListTile(
-                title: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text('Ticket price'),
-                    Text('${widget.ticketPrice}'),
-                  ],
+                SizedBox(height: 2,),
+                ListTile(
+                  title: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Ticket price'),
+                      Text(widget.ticketPrice),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          )
+              ],
+            )
         ),
         SizedBox(height: 12,),
       ],
-
     );
   }
 
@@ -287,6 +286,9 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       child: ElevatedButton(
         onPressed: () {
           vm.logInfo();
+          // Print JSON output
+          final jsonOutput = jsonEncode(vm.toJson());
+          debugPrint('Passenger Info JSON: $jsonOutput');
           // Add navigation or further action here
         },
         style: ElevatedButton.styleFrom(
@@ -310,13 +312,17 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   Widget _buildTextField(
       String label, TextEditingController controller, ValueChanged<String> onChanged) {
     return TextField(
+      style: AppTextStyle.body2.copyWith(color: controller.text.isNotEmpty ? AppColors.primaryColor : const Color(0xFF9C9C9C),),
       controller: controller,
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,
-        labelText: label,
+        hintText: label,
         border: const OutlineInputBorder(),
       ),
-      onChanged: onChanged,
+      onChanged: (value) {
+        setState(() {});
+        onChanged(value);
+      },
     );
   }
 
@@ -340,10 +346,18 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               style: const TextStyle(fontWeight: FontWeight.bold)),
           children: [
             const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: const Text('Last name'),
+            ),
             _buildTextField('Last name', lastNameController,
                     (val) => vm.updatePassenger(index: index, lastName: val)),
             const SizedBox(height: 12),
-            _buildTextField('Middle & First name', firstNameController,
+            Align(
+              alignment: Alignment.centerLeft,
+              child: const Text('Middle & First name'),
+            ),
+            _buildTextField('Example: NGUYEN', firstNameController,
                     (val) => vm.updatePassenger(index: index, firstName: val)),
             const SizedBox(height: 12),
             Row(
@@ -383,7 +397,8 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       children: [
         const Text('Gender'),
         DropdownButtonFormField<String>(
-          decoration: const InputDecoration(border: OutlineInputBorder()),
+          style: AppTextStyle.body2.copyWith(color: AppColors.primaryColor),
+          decoration: const InputDecoration(border: OutlineInputBorder(),hintText: 'Choose'),
           value: passenger.gender,
           items: ['Male', 'Female'].map((String value) {
             return DropdownMenuItem<String>(
@@ -404,6 +419,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       children: [
         const Text('Date of Birth'),
         TextField(
+          style: AppTextStyle.body2.copyWith(color: AppColors.primaryColor),
           controller: dobController,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
@@ -437,7 +453,8 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       children: [
         const Text('Passport/ID'),
         DropdownButtonFormField<String>(
-          decoration: const InputDecoration(border: OutlineInputBorder()),
+          style: AppTextStyle.body3.copyWith(color: AppColors.primaryColor),
+          decoration: const InputDecoration(border: OutlineInputBorder(),hintText: 'ID Card',),
           value: passenger.documentType,
           items: ['ID Card', 'Passport'].map((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));
@@ -455,6 +472,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       children: [
         const Text('Number'),
         TextField(
+          style: AppTextStyle.body2.copyWith(color: documentNumberController.text.isNotEmpty ? AppColors.primaryColor : const Color(0xFF9C9C9C),),
           controller: documentNumberController,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),

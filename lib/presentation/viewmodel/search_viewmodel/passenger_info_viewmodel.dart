@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:booking_flight/data/search_tickets_tmp_data.dart';
 import 'package:booking_flight/data/passenger_infor_model.dart';
-import 'package:booking_flight/data/search_flight_Data.dart';
 
 class PassengerInfoViewModel extends ChangeNotifier {
   final int adultCount;
@@ -98,4 +96,26 @@ class PassengerInfoViewModel extends ChangeNotifier {
   void onDocumentNumberChanged(int index, String? value) => updatePassenger(index: index, documentNumber: value);
 
   List<Passenger> get allPassengers => _passengers;
+
+  Map<String, dynamic> toJson() {
+    final DateFormat dateFormat = DateFormat('dd/MM/yyyy');
+    return {
+      'contactInfo': {
+        'phoneNumber': phoneNumber,
+        'email': email,
+        'saveContactInfo': saveContactInfo,
+      },
+      'passengers': _passengers.map((passenger) => {
+        'type': passenger.type,
+        'lastName': passenger.lastName,
+        'firstName': passenger.firstName,
+        'gender': passenger.gender,
+        'dateOfBirth': passenger.dateOfBirth != null
+            ? dateFormat.format(passenger.dateOfBirth!)
+            : null,
+        'documentType': passenger.documentType,
+        'documentNumber': passenger.documentNumber,
+      }).toList(),
+    };
+  }
 }

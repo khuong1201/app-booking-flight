@@ -3,11 +3,11 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/search_tickets_tmp_data.dart';
-import '../../view/search/search_date_view.dart';
-import '../../view/search/search_flight_tiket_view.dart';
-import '../../view/search/search_number_of_passenger_view.dart';
-import '../../view/search/search_place_view.dart';
-import '../../view/search/search_seat_view.dart';
+import '../../view/search_view/search_date_view.dart';
+import '../../view/search_view/search_flight_tiket_view.dart';
+import '../../view/search_view/search_number_of_passenger_view.dart';
+import '../../view/search_view/search_place_view.dart';
+import '../../view/search_view/search_seat_view.dart';
 
 class RoundTripFormViewModel extends ChangeNotifier {
   Map<String, String>? departureAirport;

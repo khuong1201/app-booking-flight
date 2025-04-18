@@ -6,7 +6,7 @@ import '../../../core/widget/custom_button_widget.dart';
 import '../../../core/widget/section_title_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:booking_flight/presentation/viewmodel/home/one_way_view_model.dart';
-import '../search/search_number_of_passenger_view.dart';
+import '../search_view/search_number_of_passenger_view.dart';
 
 class OneWayTripForm extends StatelessWidget {
   const OneWayTripForm({super.key});

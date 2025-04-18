@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../viewmodel/home/Detail_flight_tickets_view_model.dart';
 import 'package:booking_flight/core/constants/constants.dart';
 
-import '../search/passenger_information_view.dart';
+import '../search_view/passenger_information_view.dart';
 
 class TicketDetailsView extends StatelessWidget {
   final DetailFlightTicketsViewModel viewModel;

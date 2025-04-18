@@ -1,13 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/search_tickets_tmp_data.dart';
-import '../../view/search/search_date_view.dart';
-import '../../view/search/search_flight_tiket_view.dart';
-import '../../view/search/search_number_of_passenger_view.dart';
-import '../../view/search/search_place_view.dart';
-import '../../view/search/search_seat_view.dart';
+import '../../view/search_view/search_date_view.dart';
+import '../../view/search_view/search_flight_tiket_view.dart';
+import '../../view/search_view/search_number_of_passenger_view.dart';
+import '../../view/search_view/search_place_view.dart';
+import '../../view/search_view/search_seat_view.dart';
 
 class OneWayTripViewModel extends ChangeNotifier {
   Map<String, String>? departureAirport;
@@ -41,7 +43,6 @@ class OneWayTripViewModel extends ChangeNotifier {
 
     notifyListeners();
   }
-
 
   Future<Map<String, String>?> _loadAirportData(SharedPreferences prefs, String prefix) async {
     final code = prefs.getString('one_way_${prefix}_code');
@@ -235,6 +236,7 @@ class OneWayTripViewModel extends ChangeNotifier {
   }
 
   void searchFlights(BuildContext context) {
+    print("JSON Data: ${jsonEncode(toJson())}");
     if (departureAirport == null || arrivalAirport == null) {
       _showErrorDialog(context, "Vui lòng chọn điểm đi và điểm đến.", false);
       return;
@@ -284,5 +286,32 @@ class OneWayTripViewModel extends ChangeNotifier {
     seatClass = "Economy";
 
     notifyListeners();
+  }
+
+  Map<String, dynamic> toJson() {
+    final DateFormat dateFormat = DateFormat('yyyy-MM-dd');
+    return {
+      'departureAirport': departureAirport != null
+          ? {
+        'code': departureAirport!['code'],
+        'city': departureAirport!['city'],
+      }
+          : null,
+      'arrivalAirport': arrivalAirport != null
+          ? {
+        'code': arrivalAirport!['code'],
+        'city': arrivalAirport!['city'],
+      }
+          : null,
+      'departureDate': departureDate != null
+          ? dateFormat.format(departureDate!)
+          : null,
+      'passengers': {
+        'adults': passengerAdults,
+        'children': passengerChilds,
+        'infants': passengerInfants,
+      },
+      'seatClass': seatClass,
+    };
   }
 }

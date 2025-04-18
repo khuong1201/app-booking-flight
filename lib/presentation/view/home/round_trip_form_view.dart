@@ -6,7 +6,7 @@ import '../../../core/widget/custom_button_widget.dart';
 import '../../../core/widget/section_title_widget.dart';
 import '../../viewmodel/home/round_trip_view_model.dart';
 import 'package:intl/intl.dart';
-import '../search/search_number_of_passenger_view.dart';
+import '../search_view/search_number_of_passenger_view.dart';
 
 class RoundTripForm extends StatelessWidget {
   const RoundTripForm({super.key});

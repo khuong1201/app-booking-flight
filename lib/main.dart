@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:booking_flight/presentation/view/welcome/welcome_view.dart';
+import 'package:booking_flight/presentation/view/welcome_view/welcome_view.dart';
 
 void main() {
   runApp(const MyApp());

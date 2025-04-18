@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:booking_flight/core/widget/app_bar_search_widget.dart';
 import 'package:booking_flight/core/constants/constants.dart';
-import 'package:booking_flight/presentation/viewmodel/searchmodel/search_place_view_model.dart';
+import 'package:booking_flight/presentation/viewmodel/search_viewmodel/search_place_view_model.dart';
 
 class SearchPlace extends StatelessWidget {
   final String? selectedAirport;

@@ -14,7 +14,7 @@ class ContactInfo {
 
   @override
   String toString() {
-    return 'ContactInfo: phone=${_phoneNumber}, email=${_email}';
+    return 'ContactInfo: phone=$_phoneNumber, email=$_email';
   }
 }
 

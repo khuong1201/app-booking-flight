@@ -1,4 +1,3 @@
-import 'package:flutter_svg/flutter_svg.dart';
 class AppIcons{
   static const String airplane = "assets/icons/Airplane.png";
   static const String airplaneLanding = "assets/icons/Airplane Landing.png";

@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/widget/tab_bar_widget.dart';
 import '../../../data/search_flight_Data.dart';
 import '../../../data/search_tickets_tmp_data.dart';
-import '../../viewmodel/searchmodel/search_flight_tiket_view_model.dart';
+import '../../viewmodel/search_viewmodel/search_flight_tiket_view_model.dart';
 import '../home/one_way_trip_form_view.dart';
 import '../home/round_trip_form_view.dart';
 
@@ -194,7 +194,7 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
   late List<FlightTicketViewModel> filteredList;
   FlightTicketViewModel? cheapestFlight;
   bool isLoading = true;
-  int _tabIndex = 0; // State for the tab bar
+  final int _tabIndex = 0; // State for the tab bar
 
   @override
   void initState() {
@@ -399,45 +399,58 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
       );
     }
 
-    return ListView(
-      padding: EdgeInsets.only(top: 8),
-      children: [
-        if (cheapestFlight != null) ...[
-          Padding(
-            padding:
-            const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 4.0),
+    return ListView.builder(
+      padding: const EdgeInsets.only(top: 8),
+      itemCount: (cheapestFlight != null ? 2 : 0) + filteredList.length + 2, // thêm 2 dòng Text
+      itemBuilder: (context, index) {
+        int offset = cheapestFlight != null ? 2 : 0;
+
+        if (cheapestFlight != null && index == 0) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 4.0),
             child: Text(
-              'Best flight from your search',
+              'Best flight from your search_view',
               style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
             ),
-          ),
-          GestureDetector(
-            onTap: () {
-              cheapestFlight!.showTicketDetailsSheet(context);
-            },
-            child: FlightTicketCard(
-                viewModel: cheapestFlight!, isBestCheap: true),
-          ),
-          Divider(indent: 16, endIndent: 16, height: 20),
-        ],
-        Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 4.0),
-          child: Text(
-            cheapestFlight != null ? 'All flights' : 'Available flights',
-            style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
-          ),
-        ),
-        ...filteredList
-            .map((flight) => GestureDetector(
+          );
+        }
+
+        if (cheapestFlight != null && index == 1) {
+          return Column(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  cheapestFlight!.showTicketDetailsSheet(context);
+                },
+                child: FlightTicketCard(viewModel: cheapestFlight!, isBestCheap: true),
+              ),
+              const Divider(indent: 16, endIndent: 16, height: 20),
+            ],
+          );
+        }
+
+        if (index == offset) {
+          return Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 4.0),
+            child: Text(
+              cheapestFlight != null ? 'All flights' : 'Available flights',
+              style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
+            ),
+          );
+        }
+
+        if (index == offset + filteredList.length + 1) {
+          return const SizedBox(height: 20);
+        }
+
+        final flight = filteredList[index - offset - 1];
+        return GestureDetector(
           onTap: () {
             flight.showTicketDetailsSheet(context);
           },
-          child:
-          FlightTicketCard(viewModel: flight, isBestCheap: false),
-        ))
-            .toList(),
-        SizedBox(height: 20),
-      ],
+          child: FlightTicketCard(viewModel: flight, isBestCheap: false),
+        );
+      },
     );
   }
 }

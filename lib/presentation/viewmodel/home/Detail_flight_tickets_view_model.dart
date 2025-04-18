@@ -100,7 +100,7 @@ class DetailFlightTicketsViewModel extends ChangeNotifier {
   }
 
   String get totalAmountString =>
-      currencyFormatter.format(calculateTotalAmount()) + " VND";
+      "${currencyFormatter.format(calculateTotalAmount())} VND";
   int get passengerAdults => searchTicketData.passengerAdults ;
   int get passengerChilds => searchTicketData.passengerChilds ;
   int get passengerInfants => searchTicketData.passengerInfants ;

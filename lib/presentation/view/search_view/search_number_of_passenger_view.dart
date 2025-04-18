@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/constants.dart';
-import '../../viewmodel/searchmodel/search_passenger_view_model.dart';
+import '../../viewmodel/search_viewmodel/search_passenger_view_model.dart';
 
 class PassengerSelectionSheet extends StatelessWidget {
   final int initialAdults;

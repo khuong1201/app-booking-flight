@@ -114,8 +114,7 @@ class FlightTicketViewModel extends ChangeNotifier {
         return false;
       }
 
-      bool matchesDate = flightDate != null &&
-          flightDate.year == filterDate.year &&
+      bool matchesDate = flightDate.year == filterDate.year &&
           flightDate.month == filterDate.month &&
           flightDate.day == filterDate.day;
 

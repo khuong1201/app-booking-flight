@@ -1,5 +1,8 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -7,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.primiterFlight.primiter.booking_flight"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk(33)
     ndkVersion = "28.0.12163074"
 
     compileOptions {
@@ -24,8 +27,8 @@ android {
         applicationId = "com.primiterFlight.primiter.booking_flight"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdkVersion(23)
+        targetSdk(33)
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

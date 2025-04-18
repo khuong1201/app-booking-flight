@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "510872043104",
+    "project_id": "primiter-67c7b",
+    "storage_bucket": "primiter-67c7b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:510872043104:android:f1ba7ca7e8728027b00d05",
+        "android_client_info": {
+          "package_name": "com.primiterFlight.primiter.booking_flight"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOfxgQhnX-074Ld4gN6h0NB9NWlKBSYjg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

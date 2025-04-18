@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/text_styles.dart';
-import '../../viewmodel/searchmodel/selection_date_view_model.dart';
+import '../../viewmodel/search_viewmodel/selection_date_view_model.dart';
 
 class AppBarChooseDateWidget extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback onBack;

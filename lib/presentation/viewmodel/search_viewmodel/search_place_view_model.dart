@@ -6,14 +6,14 @@ class SearchPlaceViewModel extends ChangeNotifier {
   String searchQuery = '';
   List<Map<String, String>> filteredAirports = [];
 
-  // Function to update search query
+  // Function to update search_view query
   void onSearch(String value) {
     searchQuery = value;
     debugPrint('Search query: $searchQuery');
     filterAirports();
   }
 
-  // Filter the airports based on the search query
+  // Filter the airports based on the search_view query
   void filterAirports() {
     debugPrint('Filtering airports...');
     if (searchQuery.isEmpty) {
@@ -45,10 +45,10 @@ class SearchPlaceViewModel extends ChangeNotifier {
     return filteredAirports.where((airport) => airport["type"] == "international").toList();
   }
 
-  // Function to clear search and reset filter
+  // Function to clear search_view and reset filter
   void clearSearch() {
     searchController.clear();
-    onSearch(''); // Reset search with empty string
+    onSearch(''); // Reset search_view with empty string
   }
 
   //Khởi tạo dữ liệu khi viewmodel được tạo ra.

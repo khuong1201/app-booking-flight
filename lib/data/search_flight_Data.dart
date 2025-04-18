@@ -184,7 +184,7 @@ final List<FlightData> flightDataList = [
     price: '1.800.000 VND',
     passengerCount: '1 passenger',
     duration: '1h 30m',
-    departureDate: '2025-04-17',
+    departureDate: '2025-04-18',
   ),
   FlightData(
     airlineLogo: 'assets/logo/VietJet-Air.png',

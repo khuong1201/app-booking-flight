@@ -1,4 +1,4 @@
-import 'package:booking_flight/presentation/view/welcome/welcome_page.dart';
+import 'package:booking_flight/presentation/view/welcome_view/welcome_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:booking_flight/core/constants/constants.dart';
