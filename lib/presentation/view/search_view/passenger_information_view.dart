@@ -1,55 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert'; // Added for JSON encoding
+import 'dart:convert';
 
-import '../../../core/constants/constants.dart';
+import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/text_styles.dart';
 import '../../../data/passenger_infor_model.dart';
+import '../../viewmodel/home/Detail_flight_tickets_view_model.dart';
 import '../../viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
+import '../purcharse_services_view/addition_services_view.dart';
+import '../../../data/search_flight_data.dart';
+import '../../viewmodel/search_viewmodel/SearchViewModel.dart';
 
 class PassengerInfoScreen extends StatelessWidget {
-  final int adultCount;
-  final int childCount;
-  final int infantCount;
-  final String ticketPrice;
-  final String routerTrip;
-  final String logoAirPort;
+  final DetailFlightTicketsViewModel detailViewModel;
+  final FlightData? flightData;
+  final SearchViewModel? searchViewModel;
 
   const PassengerInfoScreen({
     super.key,
-    required this.adultCount,
-    required this.childCount,
-    required this.infantCount,
-    required this.ticketPrice,
-    required this.routerTrip,
-    required this.logoAirPort,
+    required this.detailViewModel,
+    this.flightData,
+    this.searchViewModel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => PassengerInfoViewModel(
-        adultCount: adultCount,
-        childCount: childCount,
-        infantCount: infantCount,
-      ),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider.value(value: detailViewModel),
+        ChangeNotifierProvider(
+          create: (_) => PassengerInfoViewModel(
+            adultCount: detailViewModel.passengerAdults,
+            childCount: detailViewModel.passengerChilds,
+            infantCount: detailViewModel.passengerInfants,
+            detailViewModel: detailViewModel,
+          ),
+        ),
+      ],
       child: _PassengerInfoBody(
-        ticketPrice: ticketPrice,
-        logoAirPort: logoAirPort,
-        routerTrip: routerTrip,
+        flightData: flightData,
+        searchViewModel: searchViewModel,
       ),
     );
   }
 }
 
 class _PassengerInfoBody extends StatefulWidget {
-  final String ticketPrice;
-  final String logoAirPort;
-  final String routerTrip;
+  final FlightData? flightData;
+  final SearchViewModel? searchViewModel;
+
   const _PassengerInfoBody({
-    required this.ticketPrice,
-    required this.logoAirPort,
-    required this.routerTrip,
+    this.flightData,
+    this.searchViewModel,
   });
 
   @override
@@ -68,19 +71,26 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   void initState() {
     super.initState();
     final vm = Provider.of<PassengerInfoViewModel>(context, listen: false);
-    _lastNameControllers = List.generate(vm.allPassengers.length,
-            (index) => TextEditingController(text: vm.allPassengers[index].lastName));
-    _firstNameControllers = List.generate(vm.allPassengers.length,
-            (index) => TextEditingController(text: vm.allPassengers[index].firstName));
+    _lastNameControllers = List.generate(
+      vm.allPassengers.length,
+          (index) => TextEditingController(text: vm.allPassengers[index].lastName),
+    );
+    _firstNameControllers = List.generate(
+      vm.allPassengers.length,
+          (index) => TextEditingController(text: vm.allPassengers[index].firstName),
+    );
     _dobControllers = List.generate(
-        vm.allPassengers.length,
-            (index) => TextEditingController(
-          text: vm.allPassengers[index].dateOfBirth != null
-              ? DateFormat('dd/MM/yyyy').format(vm.allPassengers[index].dateOfBirth!)
-              : '',
-        ));
-    _documentNumberControllers = List.generate(vm.allPassengers.length,
-            (index) => TextEditingController(text: vm.allPassengers[index].documentNumber));
+      vm.allPassengers.length,
+          (index) => TextEditingController(
+        text: vm.allPassengers[index].dateOfBirth != null
+            ? DateFormat('dd/MM/yyyy').format(vm.allPassengers[index].dateOfBirth!)
+            : '',
+      ),
+    );
+    _documentNumberControllers = List.generate(
+      vm.allPassengers.length,
+          (index) => TextEditingController(text: vm.allPassengers[index].documentNumber),
+    );
   }
 
   @override
@@ -104,25 +114,89 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PassengerInfoViewModel>(
-      builder: (context, vm, child) {
+    return Consumer2<PassengerInfoViewModel, DetailFlightTicketsViewModel>(
+      builder: (context, vm, detailVM, child) {
         return Scaffold(
           appBar: _buildAppBar(context),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildContactInfoSection(vm),
-                const SizedBox(height: 24),
-                _buildPassengerInfoSection(vm),
-                const SizedBox(height: 16),
-                _buildSaveContactSwitch(vm),
-                const SizedBox(height: 24),
-                _buildTotalAmountExpansionTile(vm),
-                const SizedBox(height: 16),
-                _buildContinueButton(vm),
-              ],
+          body: Container(
+            color: const Color(0xFFE3E8F7),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: EdgeInsets.only(left: 16,right: 16,top: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle('CONTACT INFORMATION'),
+                        _buildDescription(
+                          'Contact information will be used to confirm booking or receive notification from airlines/ agency in case the flight changes.',
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24,),
+                  Padding(
+                    padding: EdgeInsets.only(left: 16,right: 16,),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: _buildContactInfoSection(vm),
+                    ),
+                  ),
+                  const SizedBox(height: 24,),
+                  Padding(
+                    padding: EdgeInsets.only(left: 16,right: 16,),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle('PASSENGER INFORMATION'),
+                        _buildDescription(
+                          'You must enter your full name with the same order as one in your Passport/ ID card/ TCR for adult or Children’s Birth certificate.',
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16,),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: _buildPassengerInfoSection(vm),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.only(left: 16,right: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                    ),
+                    child: _buildSaveContactSwitch(vm),
+                  ),
+                  const SizedBox(height: 24),
+                  Container(
+                    padding: const EdgeInsets.only(bottom: 16,left: 16,right: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                    ),
+                    child:Column(
+                      children: [
+                        _buildTotalAmountExpansionTile(vm, detailVM),
+                        _buildContinueButton(vm, detailVM),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -167,15 +241,19 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('CONTACT INFORMATION'),
-        _buildDescription(
-          'Contact information will be used to confirm booking or receive notification from airlines/ agency in case the flight changes.',
+        Text('Phone number',style: AppTextStyle.paragraph1.copyWith(color: AppColors.neutralColor),),
+        _buildTextField(
+          'Phone number',
+          _phoneController,
+              (val) => vm.updateContactInfo(phoneNumber: val),
         ),
-        const SizedBox(height: 16),
-        _buildTextField('Phone number', _phoneController,
-                (val) => vm.updateContactInfo(phoneNumber: val)),
         const SizedBox(height: 12),
-        _buildTextField('Email', _emailController, (val) => vm.updateContactInfo(email: val)),
+        Text('Email',style: AppTextStyle.paragraph1.copyWith(color: AppColors.neutralColor),),
+        _buildTextField(
+          'Email',
+          _emailController,
+              (val) => vm.updateContactInfo(email: val),
+        ),
       ],
     );
   }
@@ -183,30 +261,21 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   Widget _buildPassengerInfoSection(PassengerInfoViewModel vm) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle('PASSENGER INFORMATION'),
-        _buildDescription(
-          'You must enter your full name with the same order as one in your Passport/ ID card/ TCR for adult or Children’s Birth certificate.',
-        ),
-        const SizedBox(height: 16),
-        ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: vm.allPassengers.length,
-          itemBuilder: (context, index) {
-            final passenger = vm.allPassengers[index];
-            return _buildPassengerCard(index, passenger, vm);
-          },
-        ),
-      ],
+      children: vm.allPassengers
+          .asMap()
+          .entries
+          .map((entry) => _buildPassengerCard(entry.key, entry.value, vm))
+          .toList(),
     );
   }
-
   Widget _buildSaveContactSwitch(PassengerInfoViewModel vm) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text('Save passenger contact', style: TextStyle(fontWeight: FontWeight.w500)),
+        const Text(
+          'Save passenger contact',
+          style: TextStyle(fontWeight: FontWeight.w500),
+        ),
         Switch(
           value: vm.saveContactInfo,
           onChanged: (value) => vm.toggleSaveContactInfo(value),
@@ -215,104 +284,177 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildTotalAmountExpansionTile(PassengerInfoViewModel vm) {
+  Widget _buildTotalAmountExpansionTile(PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
     return ExpansionTile(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text('Total', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          Text(widget.ticketPrice, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const Text(
+            'Total',
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
+          Text(
+            detailVM.totalAmountString,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          ),
         ],
       ),
       children: <Widget>[
         Container(
-            width: 379,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-                color: Color(0xFFE3E8F7)
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Image.asset(
-                            widget.logoAirPort,
-                            height: 40,
-                            width: 40,
-                            fit: BoxFit.contain,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(widget.routerTrip),
-                        ],
-                      ),
-                      Text(widget.ticketPrice),
-                    ],
-                  ),
+          width: 379,
+          decoration: const BoxDecoration(
+            borderRadius: BorderRadius.all(Radius.circular(8)),
+            color: Color(0xFFE3E8F7),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Image.asset(
+                          detailVM.airlineLogo.isNotEmpty ? detailVM.airlineLogo : 'assets/default_logo.png',
+                          height: 40,
+                          width: 40,
+                          fit: BoxFit.contain,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(detailVM.routeTitle),
+                      ],
+                    ),
+                    Text(detailVM.totalAmountString),
+                  ],
                 ),
-                SizedBox(height: 2,),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Divider(
-                    thickness: 1,
-                    color: AppColors.neutralColor,
-                  ),
+              ),
+              const SizedBox(height: 2),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Divider(
+                  thickness: 1,
+                  color: AppColors.neutralColor,
                 ),
-                SizedBox(height: 2,),
-                ListTile(
-                  title: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Ticket price'),
-                      Text(widget.ticketPrice),
-                    ],
-                  ),
+              ),
+              const SizedBox(height: 2),
+              ListTile(
+                title: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Ticket price'),
+                    Text(detailVM.totalAmountString),
+                  ],
                 ),
-              ],
-            )
+              ),
+            ],
+          ),
         ),
-        SizedBox(height: 12,),
+        const SizedBox(height: 12),
       ],
     );
   }
 
-  Widget _buildContinueButton(PassengerInfoViewModel vm) {
+  Widget _buildContinueButton(PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
     return SizedBox(
-      width: double.infinity,
+      width: 379,
+      height: 60,
       child: ElevatedButton(
         onPressed: () {
+          bool isValid = true;
+          for (var passenger in vm.allPassengers) {
+            if (passenger.lastName == null ||
+                passenger.lastName!.isEmpty ||
+                passenger.firstName == null ||
+                passenger.firstName!.isEmpty ||
+                passenger.dateOfBirth == null ||
+                passenger.gender == null) {
+              isValid = false;
+              break;
+            }
+          }
+          if (vm.phoneNumber.isEmpty || vm.email.isEmpty) {
+            isValid = false;
+          }
+
+          if (!isValid) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Please fill in all required passenger and contact information.'),
+              ),
+            );
+            return;
+          }
+
           vm.logInfo();
-          // Print JSON output
           final jsonOutput = jsonEncode(vm.toJson());
           debugPrint('Passenger Info JSON: $jsonOutput');
-          // Add navigation or further action here
+
+          if (widget.flightData == null || widget.searchViewModel == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Flight data or search view model is missing.'),
+              ),
+            );
+            return;
+          }
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AdditionalServicesScreen(
+                flightData: widget.flightData!,
+                searchViewModel: widget.searchViewModel!,
+                passengerInfoViewModel: vm,
+              ),
+            ),
+          );
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryColor,
           padding: const EdgeInsets.symmetric(vertical: 14),
           textStyle: const TextStyle(fontSize: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
+          ),
         ),
-        child: const Text('Continue'),
+        child: Text(
+          'Continue',
+          style: AppTextStyle.body3.copyWith(color: Colors.white),
+        ),
       ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16));
+    return Text(
+      title,
+      style: const TextStyle(
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
+        color: AppColors.primaryColor,
+      ),
+    );
   }
 
   Widget _buildDescription(String text) {
-    return Text(text, style: const TextStyle(fontSize: 12, color: Colors.grey));
+    return Text(
+      text,
+      style: const TextStyle(fontSize: 12, color: Colors.grey),
+    );
   }
 
   Widget _buildTextField(
-      String label, TextEditingController controller, ValueChanged<String> onChanged) {
+      String label,
+      TextEditingController controller,
+      ValueChanged<String> onChanged,
+      ) {
     return TextField(
-      style: AppTextStyle.body2.copyWith(color: controller.text.isNotEmpty ? AppColors.primaryColor : const Color(0xFF9C9C9C),),
+      style: AppTextStyle.body2.copyWith(
+        color: controller.text.isNotEmpty
+            ? AppColors.primaryColor
+            : const Color(0xFF9C9C9C),
+      ),
       controller: controller,
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,
@@ -327,7 +469,10 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   }
 
   Widget _buildPassengerCard(
-      int index, Passenger passenger, PassengerInfoViewModel vm) {
+      int index,
+      Passenger passenger,
+      PassengerInfoViewModel vm,
+      ) {
     final lastNameController = _lastNameControllers[index];
     final firstNameController = _firstNameControllers[index];
     final dobController = _dobControllers[index];
@@ -336,29 +481,38 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       elevation: 0,
+      color: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: ExpansionTile(
           tilePadding: EdgeInsets.zero,
           initiallyExpanded: true,
-          title: Text('Passenger ${index + 1} - ${passenger.type}',
-              style: const TextStyle(fontWeight: FontWeight.bold)),
+          title: Text(
+            'Passenger ${index + 1} - ${passenger.type}',
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
           children: [
             const SizedBox(height: 12),
-            Align(
+            const Align(
               alignment: Alignment.centerLeft,
-              child: const Text('Last name'),
+              child: Text('Last name'),
             ),
-            _buildTextField('Last name', lastNameController,
-                    (val) => vm.updatePassenger(index: index, lastName: val)),
+            _buildTextField(
+              'Example: NGUYEN',
+              lastNameController,
+                  (val) => vm.updatePassenger(index: index, lastName: val),
+            ),
             const SizedBox(height: 12),
-            Align(
+            const Align(
               alignment: Alignment.centerLeft,
-              child: const Text('Middle & First name'),
+              child: Text('Middle & First name'),
             ),
-            _buildTextField('Example: NGUYEN', firstNameController,
-                    (val) => vm.updatePassenger(index: index, firstName: val)),
+            _buildTextField(
+              'Middle & First name',
+              firstNameController,
+                  (val) => vm.updatePassenger(index: index, firstName: val),
+            ),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -391,14 +545,20 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   }
 
   Widget _buildGenderDropdown(
-      Passenger passenger, int index, PassengerInfoViewModel vm) {
+      Passenger passenger,
+      int index,
+      PassengerInfoViewModel vm,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Gender'),
         DropdownButtonFormField<String>(
           style: AppTextStyle.body2.copyWith(color: AppColors.primaryColor),
-          decoration: const InputDecoration(border: OutlineInputBorder(),hintText: 'Choose'),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Choose',
+          ),
           value: passenger.gender,
           items: ['Male', 'Female'].map((String value) {
             return DropdownMenuItem<String>(
@@ -412,8 +572,12 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildDateOfBirthField(Passenger passenger, int index,
-      PassengerInfoViewModel vm, TextEditingController dobController) {
+  Widget _buildDateOfBirthField(
+      Passenger passenger,
+      int index,
+      PassengerInfoViewModel vm,
+      TextEditingController dobController,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -447,17 +611,26 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   }
 
   Widget _buildDocumentTypeDropdown(
-      Passenger passenger, int index, PassengerInfoViewModel vm) {
+      Passenger passenger,
+      int index,
+      PassengerInfoViewModel vm,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Passport/ID'),
         DropdownButtonFormField<String>(
           style: AppTextStyle.body3.copyWith(color: AppColors.primaryColor),
-          decoration: const InputDecoration(border: OutlineInputBorder(),hintText: 'ID Card',),
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'ID Card',
+          ),
           value: passenger.documentType,
           items: ['ID Card', 'Passport'].map((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
           }).toList(),
           onChanged: (val) => vm.updatePassenger(index: index, documentType: val),
         ),
@@ -466,13 +639,20 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   }
 
   Widget _buildDocumentNumberField(
-      TextEditingController documentNumberController, int index, PassengerInfoViewModel vm) {
+      TextEditingController documentNumberController,
+      int index,
+      PassengerInfoViewModel vm,
+      ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Number'),
         TextField(
-          style: AppTextStyle.body2.copyWith(color: documentNumberController.text.isNotEmpty ? AppColors.primaryColor : const Color(0xFF9C9C9C),),
+          style: AppTextStyle.body2.copyWith(
+            color: documentNumberController.text.isNotEmpty
+                ? AppColors.primaryColor
+                : const Color(0xFF9C9C9C),
+          ),
           controller: documentNumberController,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),

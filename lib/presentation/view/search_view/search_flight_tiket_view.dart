@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:booking_flight/core/constants/constants.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../../core/constants/constants.dart';
 import '../../../core/widget/tab_bar_widget.dart';
-import '../../../data/search_flight_Data.dart';
-import '../../../data/search_tickets_tmp_data.dart';
+import '../../../data/search_flight_data.dart';
+import '../../viewmodel/search_viewmodel/SearchViewModel.dart';
 import '../../viewmodel/search_viewmodel/search_flight_tiket_view_model.dart';
 import '../home/one_way_trip_form_view.dart';
 import '../home/round_trip_form_view.dart';
 
+// FlightTicketCard Widget
 class FlightTicketCard extends StatelessWidget {
   final FlightTicketViewModel viewModel;
   final bool isBestCheap;
+
   const FlightTicketCard({
     super.key,
     required this.viewModel,
@@ -23,13 +26,14 @@ class FlightTicketCard extends StatelessWidget {
     return Container(
       width: 379,
       height: 120,
-      margin: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(10),
         border: Border.all(
-            color: isBestCheap ? AppColors.secondaryColor : Color(0xFF9C9C9C),
-            width: 1.5),
+          color: isBestCheap ? AppColors.secondaryColor : const Color(0xFF9C9C9C),
+          width: 1.5,
+        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -44,9 +48,9 @@ class FlightTicketCard extends StatelessWidget {
                 width: 30,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
-                    Icon(Icons.airplane_ticket, size: 30),
+                const Icon(Icons.airplane_ticket, size: 30),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -56,27 +60,26 @@ class FlightTicketCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         buildFlightTimeColumn(
-                            viewModel.departureTime,
-                            viewModel.departureAirport,
-                            CrossAxisAlignment.start),
+                            viewModel.departureTime, viewModel.departureAirport, CrossAxisAlignment.start),
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(viewModel.duration,
-                                style: TextStyle(
-                                    color: Color(0xFF9C9C9C), fontSize: 12)),
+                            Text(
+                              viewModel.duration,
+                              style: const TextStyle(color: Color(0xFF9C9C9C), fontSize: 12),
+                            ),
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Container(
                                   height: 1,
                                   width: 60,
-                                  color: Color(0xFF9C9C9C),
+                                  color: const Color(0xFF9C9C9C),
                                 ),
-                                SizedBox(width: 2),
+                                const SizedBox(width: 2),
                                 Transform.scale(
                                   scaleX: 2.0,
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.arrow_forward_ios,
                                     size: 8,
                                     color: Color(0xFF9C9C9C),
@@ -84,59 +87,72 @@ class FlightTicketCard extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            Text('Direct',
-                                style: TextStyle(
-                                    fontSize: 10,
-                                    color: Color(0xFF9C9C9C),
-                                    fontWeight: FontWeight.normal)),
+                            const Text(
+                              'Direct',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Color(0xFF9C9C9C),
+                                fontWeight: FontWeight.normal,
+                              ),
+                            ),
                           ],
                         ),
                         buildFlightTimeColumn(
-                            viewModel.arrivalTime,
-                            viewModel.arrivalAirport,
-                            CrossAxisAlignment.end),
+                            viewModel.arrivalTime, viewModel.arrivalAirport, CrossAxisAlignment.end),
                       ],
                     ),
                   ],
                 ),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Container(
                 height: 40,
                 width: 1,
-                color: Color(0xFF9C9C9C),
+                color: const Color(0xFF9C9C9C),
               ),
-              SizedBox(width: 10),
+              const SizedBox(width: 10),
               Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(viewModel.price,
-                      style: AppTextStyle.body3
-                          .copyWith(color: AppColors.secondaryColor)),
-                  Text(viewModel.passengerCount,
-                      style:
-                      TextStyle(color: Color(0xFF9C9C9C), fontSize: 12)),
+                  Text(
+                    viewModel.price,
+                    style: AppTextStyle.body3.copyWith(color: AppColors.secondaryColor),
+                  ),
+                  Text(
+                    viewModel.passengerCount,
+                    style: const TextStyle(color: Color(0xFF9C9C9C), fontSize: 12),
+                  ),
                 ],
               ),
             ],
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(viewModel.airlineName,
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+              Text(
+                viewModel.airlineName,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text("Details",
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12)),
-                  SizedBox(width: 5),
-                  Icon(Icons.error_outline, color: Colors.red, size: 14),
+                  const Text(
+                    "Details",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  GestureDetector(
+                    onTap: () {
+                      viewModel.showTicketDetailsSheet(context);
+                    },
+                    child: const Icon(Icons.error_outline, color: Colors.red, size: 14),
+                  ),
                 ],
               ),
             ],
@@ -146,14 +162,19 @@ class FlightTicketCard extends StatelessWidget {
     );
   }
 
-  Widget buildFlightTimeColumn(
-      String time, String airport, CrossAxisAlignment alignment) {
+  Widget buildFlightTimeColumn(String time, String airport, CrossAxisAlignment alignment) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: alignment,
       children: [
-        Text(time, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        Text(airport, style: TextStyle(fontSize: 12, color: Colors.grey)),
+        Text(
+          time,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        Text(
+          airport,
+          style: const TextStyle(fontSize: 12, color: Colors.grey),
+        ),
       ],
     );
   }
@@ -161,27 +182,11 @@ class FlightTicketCard extends StatelessWidget {
 
 // FlightTicketScreen Widget
 class FlightTicketScreen extends StatefulWidget {
-  final String departureAirport;
-  final String arrivalAirport;
-  final String departureDate;
-  final String returnDate;
-  final int passengers;
-  final String seatClass;
-  final int passengerAdults;
-  final int passengerChilds;
-  final int passengerInfants;
+  final SearchViewModel searchViewModel;
 
   const FlightTicketScreen({
     super.key,
-    required this.departureAirport,
-    required this.arrivalAirport,
-    required this.departureDate,
-    required this.returnDate,
-    required this.passengers,
-    required this.seatClass,
-    required this.passengerAdults,
-    required this.passengerChilds,
-    required this.passengerInfants,
+    required this.searchViewModel,
   });
 
   @override
@@ -189,12 +194,11 @@ class FlightTicketScreen extends StatefulWidget {
 }
 
 class _FlightTicketScreenState extends State<FlightTicketScreen> {
-  late SearchTicketsTemp currentSearchData;
   late List<FlightTicketViewModel> allViewModelList;
   late List<FlightTicketViewModel> filteredList;
   FlightTicketViewModel? cheapestFlight;
   bool isLoading = true;
-  final int _tabIndex = 0; // State for the tab bar
+  int _tabIndex = 0;
 
   @override
   void initState() {
@@ -202,42 +206,42 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
     _initializeAndFilterFlights();
   }
 
-  String _extractCode(String airportInfo) {
-    RegExp regExp = RegExp(r'\((.*?)\)');
-    Match? match = regExp.firstMatch(airportInfo);
-    return match?.group(1) ?? airportInfo;
+  String _extractCode(Map<String, dynamic>? airport) {
+    return airport?['code'] ?? '';
+  }
+
+  String _getSeatClass() {
+    // Kiểm tra kiểu của searchViewModel để lấy seatClass
+    if (widget.searchViewModel is OneWayTripViewModel) {
+      return (widget.searchViewModel as OneWayTripViewModel).seatClass;
+    } else if (widget.searchViewModel is RoundTripFormViewModel) {
+      return (widget.searchViewModel as RoundTripFormViewModel).seatClass;
+    }
+    return 'Unknown';
   }
 
   void _initializeAndFilterFlights() {
     setState(() => isLoading = true);
-    currentSearchData = SearchTicketsTemp(
-      departureAirportCode: _extractCode(widget.departureAirport),
-      arrivalAirportCode: _extractCode(widget.arrivalAirport),
-      departingDate: widget.departureDate,
-      returningDate:
-      widget.returnDate.isNotEmpty ? widget.returnDate : null,
-      passengerAdults: widget.passengerAdults,
-      passengerChilds: widget.passengerChilds,
-      passengerInfants: widget.passengerInfants,
-      seatClass: widget.seatClass,
-      isRoundTrip: widget.returnDate.isNotEmpty,
-    );
 
-    allViewModelList =
-        FlightTicketViewModel.fetchAllData(flightDataList, currentSearchData);
+    allViewModelList = FlightTicketViewModel.fetchAllData(flightDataList, widget.searchViewModel);
 
     print(
-        'Filtering flights for: ${widget.departureAirport} -> ${widget.arrivalAirport} on ${widget.departureDate}');
+        'Filtering flights for: ${_extractCode(widget.searchViewModel.departureAirport)} -> ${_extractCode(widget.searchViewModel.arrivalAirport)} on ${widget.searchViewModel.departureDate}');
     filteredList = FlightTicketViewModel.filterFlights(
       flights: allViewModelList,
-      departureInfo: widget.departureAirport,
-      arrivalInfo: widget.arrivalAirport,
-      date: widget.departureDate,
+      departureInfo: "${widget.searchViewModel.departureAirport?['city'] ?? ''} (${widget.searchViewModel.departureAirport?['code'] ?? ''})",
+      arrivalInfo: "${widget.searchViewModel.arrivalAirport?['city'] ?? ''} (${widget.searchViewModel.arrivalAirport?['code'] ?? ''})",
+      date: widget.searchViewModel.departureDate != null
+          ? DateFormat('yyyy-MM-dd').format(widget.searchViewModel.departureDate!)
+          : DateTime.now().toIso8601String().split('T')[0],
+      isRoundTrip: widget.searchViewModel.returnDate != null,
+      returnDate: widget.searchViewModel.returnDate != null
+          ? DateFormat('yyyy-MM-dd').format(widget.searchViewModel.returnDate!)
+          : null,
     );
     print('Found ${filteredList.length} matching flights.');
 
-    cheapestFlight =
-        FlightTicketViewModel.findCheapestFlight(filteredList);
+    cheapestFlight = FlightTicketViewModel.findCheapestFlight(filteredList);
 
     setState(() => isLoading = false);
   }
@@ -250,12 +254,12 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
       barrierDismissible: true,
       builder: (BuildContext context) {
         return Dialog(
-          insetPadding: EdgeInsets.only(top: 0, left: 0, right: 0),
+          insetPadding: const EdgeInsets.only(top: 0, left: 0, right: 0),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
           child: StatefulBuilder(
             builder: (BuildContext context, StateSetter setModalState) {
               return Container(
-                color: AppColors.primaryColor, // Màu nền của toàn bộ dialog
+                color: AppColors.primaryColor,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -265,13 +269,13 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           'Search new flight',
-                          style: AppTextStyle.paragraph2.copyWith(color: Colors.white),
+                          style: AppTextStyle.paragraph1.copyWith(color: Colors.white),
                         ),
                       ),
                     ),
                     Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white, // Màu nền của CustomTabBar
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
                         borderRadius: BorderRadius.all(Radius.circular(8)),
                       ),
                       child: Column(
@@ -291,16 +295,33 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: IndexedStack(
                               index: localTabIndex,
-                              children: const [
-                                RoundTripForm(),
-                                OneWayTripForm(),
+                              children: [
+                                // Sử dụng instance hiện tại nếu có
+                                widget.searchViewModel is RoundTripFormViewModel
+                                    ? Provider<RoundTripFormViewModel>.value(
+                                  value: widget.searchViewModel as RoundTripFormViewModel,
+                                  child: const RoundTripForm(),
+                                )
+                                    : Provider<RoundTripFormViewModel>(
+                                  create: (_) => RoundTripFormViewModel(),
+                                  child: const RoundTripForm(),
+                                ),
+                                widget.searchViewModel is OneWayTripViewModel
+                                    ? Provider<OneWayTripViewModel>.value(
+                                  value: widget.searchViewModel as OneWayTripViewModel,
+                                  child: const OneWayTripForm(),
+                                )
+                                    : Provider<OneWayTripViewModel>(
+                                  create: (_) => OneWayTripViewModel(),
+                                  child: const OneWayTripForm(),
+                                ),
                               ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                   ],
                 ),
               );
@@ -310,16 +331,23 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
       },
     );
   }
+
   @override
   Widget build(BuildContext context) {
     String formattedDepartureDate = "Date Error";
     try {
-      DateTime parsedDepartureDate = DateTime.parse(widget.departureDate);
-      formattedDepartureDate =
-          DateFormat('EEE, d MMM').format(parsedDepartureDate);
+      if (widget.searchViewModel.departureDate != null) {
+        formattedDepartureDate =
+            DateFormat('EEE, d MMM').format(widget.searchViewModel.departureDate!);
+      }
     } catch (e) {
-      print("Error parsing widget.departureDate: ${widget.departureDate}");
+      print("Error formatting departureDate: ${widget.searchViewModel.departureDate}");
     }
+
+    String departureCode = _extractCode(widget.searchViewModel.departureAirport);
+    String arrivalCode = _extractCode(widget.searchViewModel.arrivalAirport);
+    String passengerInfo =
+        "${widget.searchViewModel.passengerAdults + widget.searchViewModel.passengerChilds + widget.searchViewModel.passengerInfants} pax, ${_getSeatClass()}";
 
     return Scaffold(
       appBar: AppBar(
@@ -337,7 +365,7 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
               children: [
                 Flexible(
                   child: Text(
-                    "${currentSearchData.departureAirportCode ?? 'N/A'}  →  ${currentSearchData.arrivalAirportCode ?? 'N/A'}",
+                    "$departureCode  →  $arrivalCode",
                     style: AppTextStyle.paragraph2.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -347,26 +375,19 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
                 ),
               ],
             ),
-            SizedBox(
-              height: 8,
-            ),
+            const SizedBox(height: 8),
             Row(
               children: [
                 Flexible(
                   child: Text(
-                    "$formattedDepartureDate, ${widget.passengers} pax, ${widget.seatClass}",
-                    style:
-                    AppTextStyle.caption1.copyWith(color: Color(0xFFE0E0E0)),
+                    "$formattedDepartureDate, $passengerInfo",
+                    style: AppTextStyle.caption1.copyWith(color: const Color(0xFFE0E0E0)),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(
-                  width: 8,
-                ),
+                const SizedBox(width: 8),
                 InkWell(
-                  onTap: () {
-                    _showSearchOptionsDialog(context);
-                  },
+                  onTap: () => _showSearchOptionsDialog(context),
                   child: SvgPicture.asset(
                     'assets/icons/material-symbols-light_arrow-drop-down-rounded.svg',
                     width: 16,
@@ -380,7 +401,7 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
         ),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : _buildFlightList(),
     );
   }
@@ -401,7 +422,7 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
 
     return ListView.builder(
       padding: const EdgeInsets.only(top: 8),
-      itemCount: (cheapestFlight != null ? 2 : 0) + filteredList.length + 2, // thêm 2 dòng Text
+      itemCount: (cheapestFlight != null ? 2 : 0) + filteredList.length + 2,
       itemBuilder: (context, index) {
         int offset = cheapestFlight != null ? 2 : 0;
 
@@ -409,7 +430,7 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
           return Padding(
             padding: const EdgeInsets.only(left: 16.0, top: 10.0, bottom: 4.0),
             child: Text(
-              'Best flight from your search_view',
+              'Best flight from your search',
               style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
             ),
           );

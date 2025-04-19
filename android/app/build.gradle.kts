@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.primiterFlight.primiter.booking_flight"
-    compileSdk(33)
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = "28.0.12163074"
 
     compileOptions {
@@ -28,7 +28,7 @@ android {
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdkVersion(23)
-        targetSdk(33)
+        targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }

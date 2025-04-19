@@ -1,52 +1,71 @@
+import 'package:booking_flight/presentation/viewmodel/home/Detail_flight_tickets_view_model.dart';
 import 'package:flutter/material.dart';
-import '../../../data/search_flight_Data.dart';
-import '../../../data/search_tickets_tmp_data.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import '../../../data/search_flight_data.dart';
 import '../../view/home/Detail_flight_tickets.dart';
-import '../home/Detail_flight_tickets_view_model.dart';
+import 'SearchViewModel.dart';
 
 class FlightTicketViewModel extends ChangeNotifier {
-  FlightData flightData;
-  final SearchTicketsTemp searchTicketData;
+  FlightData? _flightData;
+  final SearchViewModel? searchViewModel;
   int _searchOptionsTabIndex = 0;
 
   FlightTicketViewModel({
-    required this.flightData,
-    required this.searchTicketData,
-  });
-  int tabIndex = 0;
-  // --- Basic Flight Information ---
-  String get airlineLogo => flightData.airlineLogo;
-  String get airlineName => flightData.airlineName;
-  String get departureTime => flightData.departureTime;
-  String get departureAirport => flightData.departureAirport;
-  String get arrivalTime => flightData.arrivalTime;
-  String get arrivalAirport => flightData.arrivalAirport;
-  String get duration => flightData.duration;
-  String get price => flightData.price;
-  String get departureDate => flightData.departureDate;
+    required FlightData? flightData,
+    required this.searchViewModel,
+  }) : _flightData = flightData;
+
+  // --- Getters for Basic Flight Information ---
+  String get airlineLogo => _flightData?.airlineLogo ?? '';
+  String get airlineName => _flightData?.airlineName ?? '';
+  String get departureTime => _flightData?.departureTime ?? '';
+  String get departureAirport => _flightData?.departureAirport ?? '';
+  String get arrivalTime => _flightData?.arrivalTime ?? '';
+  String get arrivalAirport => _flightData?.arrivalAirport ?? '';
+  String get duration => _flightData?.duration ?? '';
+  String get price => _flightData?.price ?? '';
+  String get departureDate => _flightData?.departureDate ?? '';
+  String? get returnDate => _flightData?.returnDate;
+  String? get returnDepartureTime => _flightData?.returnDepartureTime;
+  String? get returnArrivalTime => _flightData?.returnArrivalTime;
 
   // --- Passenger Information from Search ---
-  int get passengerAdults => searchTicketData.passengerAdults ;
-  int get passengerChilds => searchTicketData.passengerChilds ;
-  int get passengerInfants => searchTicketData.passengerInfants ;
+  int get passengerAdults => searchViewModel?.passengerAdults ?? 0;
+  int get passengerChilds => searchViewModel?.passengerChilds ?? 0;
+  int get passengerInfants => searchViewModel?.passengerInfants ?? 0;
+  String get seatClass => searchViewModel?.seatClass ?? "Economy";
 
   String get passengerCount {
-    int total = passengerAdults + passengerChilds + passengerInfants;
-    return "$total Pax";
+    final total = passengerAdults + passengerChilds + passengerInfants;
+    return '$total Pax';
   }
 
   // --- Search Criteria Display ---
-  String get searchDepartureDate => searchTicketData.departingDate ?? 'Unknown';
-  String get searchArrivalDate => searchTicketData.returningDate ?? 'Unknown';
-  String get searchDepartureAirportCode =>
-      searchTicketData.departureAirportCode ?? 'Unknown';
-  String get searchArrivalAirportCode =>
-      searchTicketData.arrivalAirportCode ?? 'Unknown';
+  String get searchDepartureDate {
+    final departureDate = searchViewModel?.departureDate;
+    return departureDate != null
+        ? DateFormat('yyyy-MM-dd').format(departureDate)
+        : 'Unknown';
+  }
+
+  String get searchArrivalDate {
+    final returnDate = searchViewModel?.returnDate;
+    return returnDate != null
+        ? DateFormat('yyyy-MM-dd').format(returnDate)
+        : 'Unknown';
+  }
+
+  String get searchDepartureAirportCode {
+    return searchViewModel?.departureAirport?['code'] ?? 'Unknown';
+  }
+
+  String get searchArrivalAirportCode {
+    return searchViewModel?.arrivalAirport?['code'] ?? 'Unknown';
+  }
 
   int get totalPassengerCount =>
-      (searchTicketData.passengerAdults) +
-          (searchTicketData.passengerChilds) +
-          (searchTicketData.passengerInfants);
+      passengerAdults + passengerChilds + passengerInfants;
 
   // --- Tab Bar State for Search Options ---
   int get searchOptionsTabIndex => _searchOptionsTabIndex;
@@ -57,17 +76,49 @@ class FlightTicketViewModel extends ChangeNotifier {
   }
 
   // --- Data Update Method ---
-  void updateFlightData(FlightData newFlightData) {
-    flightData = newFlightData;
+  void updateFlightData(FlightData? newFlightData) {
+    _flightData = newFlightData;
     notifyListeners();
+  }
+
+  // --- Utility Methods ---
+  static double _parsePrice(String price) {
+    try {
+      // Loại bỏ đơn vị tiền tệ và khoảng trắng
+      String cleanedPrice = price.replaceAll('VND', '').trim();
+
+      // Thay dấu chấm (phân cách hàng nghìn) thành rỗng
+      cleanedPrice = cleanedPrice.replaceAll('.', '');
+
+      // Thay dấu phẩy (phân cách thập phân) thành dấu chấm
+      cleanedPrice = cleanedPrice.replaceAll(',', '.');
+
+      // Phân tích thành double
+      return double.parse(cleanedPrice);
+    } catch (e) {
+      debugPrint('Lỗi phân tích giá: $e với đầu vào: $price');
+      return double.infinity;
+    }
+  }
+
+  static DateTime? _parseDate(String date) {
+    try {
+      return DateTime.parse(date);
+    } catch (e) {
+      return null;
+    }
   }
 
   // --- Static Methods for Data Handling ---
   static List<FlightTicketViewModel> fetchAllData(
-      List<FlightData> flightDataList, SearchTicketsTemp searchTicketData) {
+      List<FlightData> flightDataList,
+      SearchViewModel? searchViewModel,
+      ) {
     return flightDataList
-        .map((data) =>
-        FlightTicketViewModel(flightData: data, searchTicketData: searchTicketData))
+        .map((data) => FlightTicketViewModel(
+      flightData: data,
+      searchViewModel: searchViewModel,
+    ))
         .toList();
   }
 
@@ -76,53 +127,70 @@ class FlightTicketViewModel extends ChangeNotifier {
     required String departureInfo,
     required String arrivalInfo,
     required String date,
+    bool isRoundTrip = false,
+    String? returnDate,
   }) {
     String extractAirportCode(String airportInfo) {
-      RegExp regExp = RegExp(r'\((.*?)\)');
-      Match? match = regExp.firstMatch(airportInfo);
-      return match?.group(1) ?? '';
+      final regExp = RegExp(r'\((.*?)\)');
+      final match = regExp.firstMatch(airportInfo);
+      return match?.group(1)?.toLowerCase() ?? '';
     }
 
-    String filterDepartureCode = extractAirportCode(departureInfo);
-    String filterArrivalCode = extractAirportCode(arrivalInfo);
+    final filterDepartureCode = extractAirportCode(departureInfo);
+    final filterArrivalCode = extractAirportCode(arrivalInfo);
 
     if (filterDepartureCode.isEmpty || filterArrivalCode.isEmpty) {
-      print(
-          "Error: Could not extract airport codes from input: $departureInfo / $arrivalInfo");
+      debugPrint(
+          'Error: Could not extract airport codes from input: $departureInfo / $arrivalInfo');
       return [];
     }
 
-    DateTime filterDate;
-    try {
-      filterDate = DateTime.parse(date);
-    } catch (e) {
-      print("Error parsing filter date: $date");
+    final filterDate = _parseDate(date);
+    if (filterDate == null) {
+      debugPrint('Error parsing filter date: $date');
       return [];
     }
 
-    List<FlightTicketViewModel> filteredFlights = flights.where((flight) {
-      bool matchesDeparture =
-          flight.departureAirport.toLowerCase() == filterDepartureCode.toLowerCase();
-      bool matchesArrival =
-          flight.arrivalAirport.toLowerCase() == filterArrivalCode.toLowerCase();
-
-      DateTime? flightDate;
-      try {
-        flightDate = DateTime.parse(flight.departureDate);
-      } catch (e) {
-        print("Error parsing flight date: ${flight.departureDate}");
-        return false;
+    DateTime? filterReturnDate;
+    if (isRoundTrip && returnDate != null) {
+      filterReturnDate = _parseDate(returnDate);
+      if (filterReturnDate == null) {
+        debugPrint('Error parsing return date: $returnDate');
+        return [];
       }
+    }
 
-      bool matchesDate = flightDate.year == filterDate.year &&
+    final filteredFlights = flights.where((flight) {
+      final matchesDeparture =
+          flight.departureAirport.toLowerCase() == filterDepartureCode;
+      final matchesArrival =
+          flight.arrivalAirport.toLowerCase() == filterArrivalCode;
+
+      final flightDate = _parseDate(flight.departureDate);
+      final matchesDate = flightDate != null &&
+          flightDate.year == filterDate.year &&
           flightDate.month == filterDate.month &&
           flightDate.day == filterDate.day;
 
-      return matchesDeparture && matchesArrival && matchesDate;
+      bool matchesReturnDate = true;
+      if (isRoundTrip && filterReturnDate != null) {
+        final flightReturnDate = flight.returnDate != null
+            ? _parseDate(flight.returnDate!)
+            : null;
+        matchesReturnDate = flightReturnDate != null &&
+            flightReturnDate.year == filterReturnDate.year &&
+            flightReturnDate.month == filterReturnDate.month &&
+            flightReturnDate.day == filterReturnDate.day;
+      }
+
+      return matchesDeparture &&
+          matchesArrival &&
+          matchesDate &&
+          (!isRoundTrip || matchesReturnDate);
     }).toList();
 
-    print(
-        "Filtering complete. Input: $filterDepartureCode -> $filterArrivalCode on $date. Found: ${filteredFlights.length} flights.");
+    debugPrint(
+        'Filtering complete. Input: $filterDepartureCode -> $filterArrivalCode on $date${isRoundTrip ? ' (Round-trip, return: $returnDate)' : ''}. Found: ${filteredFlights.length} flights.');
     return filteredFlights;
   }
 
@@ -130,50 +198,50 @@ class FlightTicketViewModel extends ChangeNotifier {
       List<FlightTicketViewModel> flights) {
     if (flights.isEmpty) return null;
 
-    flights.sort((a, b) {
-      double priceA =
-          double.tryParse(a.price.replaceAll(RegExp(r'[^\d.]'), '')) ??
-              double.infinity;
-      double priceB =
-          double.tryParse(b.price.replaceAll(RegExp(r'[^\d.]'), '')) ??
-              double.infinity;
-      return priceA.compareTo(priceB);
+    return flights.reduce((a, b) {
+      final priceA = _parsePrice(a.price);
+      final priceB = _parsePrice(b.price);
+      return priceA <= priceB ? a : b;
     });
-
-    return flights.first;
   }
 
   // --- Bottom Sheet for Ticket Details ---
   Future<void> showTicketDetailsSheet(BuildContext context) async {
+    if (_flightData == null) {
+      debugPrint('Error: Flight data is null');
+      return;
+    }
+
     final detailViewModel = DetailFlightTicketsViewModel(
-      searchTicketData: searchTicketData,
-      flightData: flightData,
+      searchViewModel: searchViewModel,
+      flightData: _flightData,
     );
+
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (BuildContext context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: TicketDetailsView(
-                  viewModel: detailViewModel,
-                  onClose: () {
-                    Navigator.pop(context); // Close the bottom sheet
-                  },
+        return ChangeNotifierProvider<DetailFlightTicketsViewModel>(
+          create: (_) => detailViewModel,
+          child: Container(
+            decoration: const BoxDecoration(color: Colors.white),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Consumer<DetailFlightTicketsViewModel>(
+                    builder: (context, viewModel, _) => TicketDetailsView(
+                      viewModel: viewModel,
+                      onClose: () => Navigator.pop(context),
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
     );
   }
-
 }

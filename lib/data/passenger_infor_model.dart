@@ -23,7 +23,6 @@ class Passenger {
   String? lastName;
   String? gender;
   DateTime? dateOfBirth;
-  String? idType;
   final String? type; // 'adult', 'child', 'infant'
 
   String? _idNumber;
@@ -35,9 +34,8 @@ class Passenger {
     this.lastName,
     this.gender,
     this.dateOfBirth,
-    this.idType,
     String? idNumber,
-    this.type,
+    required this.type,
     String? documentType,
     String? documentNumber,
   })  : _idNumber = idNumber,
