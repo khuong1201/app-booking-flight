@@ -183,10 +183,14 @@ class FlightTicketViewModel extends ChangeNotifier {
             flightReturnDate.day == filterReturnDate.day;
       }
 
+      // For one-way searches, only include flights with no returnDate
+      bool isValidForOneWay = !isRoundTrip ? flight.returnDate == null : true;
+
       return matchesDeparture &&
           matchesArrival &&
           matchesDate &&
-          (!isRoundTrip || matchesReturnDate);
+          (!isRoundTrip || matchesReturnDate) &&
+          isValidForOneWay;
     }).toList();
 
     debugPrint(
