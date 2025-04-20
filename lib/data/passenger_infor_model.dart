@@ -1,3 +1,4 @@
+
 class ContactInfo {
   String? _phoneNumber;
   String? _email;
@@ -23,11 +24,10 @@ class Passenger {
   String? lastName;
   String? gender;
   DateTime? dateOfBirth;
-  final String? type; // 'adult', 'child', 'infant'
-
+  final String type; // 'adult', 'child', 'infant'
   String? _idNumber;
-  String? _documentType; // Added for document type
-  String? _documentNumber; // Added for document number
+  String? _documentType;
+  String? _documentNumber;
 
   Passenger({
     this.firstName,
@@ -39,28 +39,26 @@ class Passenger {
     String? documentType,
     String? documentNumber,
   })  : _idNumber = idNumber,
-        _documentType = documentType,
+        _documentType = documentType ?? 'ID Card',
         _documentNumber = documentNumber;
 
   String? get idNumber => _idNumber;
   set idNumber(String? value) => _idNumber = value;
 
-  String? get documentType => _documentType; // Getter for documentType
-  set documentType(String? value) => _documentType = value; // Setter for documentType
+  String? get documentType => _documentType;
+  set documentType(String? value) => _documentType = value;
 
-  String? get documentNumber => _documentNumber; // Getter for documentNumber
-  set documentNumber(String? value) => _documentNumber = value; // Setter for documentNumber
+  String? get documentNumber => _documentNumber;
+  set documentNumber(String? value) => _documentNumber = value;
 
-  // Mask the ID number, showing only the last 4 digits
   String _maskId(String? id) {
     if (id == null || id.length < 4) return '***';
     return '***${id.substring(id.length - 4)}';
   }
 
-  // If dateOfBirth is a string, parse it into a DateTime object
   set setDateOfBirth(String? dob) {
     if (dob != null) {
-      dateOfBirth = DateTime.tryParse(dob); // Convert string to DateTime
+      dateOfBirth = DateTime.tryParse(dob);
     }
   }
 

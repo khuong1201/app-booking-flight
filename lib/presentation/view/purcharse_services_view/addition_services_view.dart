@@ -4,7 +4,7 @@ import 'package:booking_flight/data/search_flight_data.dart';
 import 'package:booking_flight/presentation/view/purcharse_services_view/checked_baggage_view.dart';
 import 'package:booking_flight/presentation/view/purcharse_services_view/order_meal_view.dart';
 import 'package:booking_flight/presentation/viewmodel/purchase_services_viewmodel/additional_services_view_model.dart';
-import 'package:booking_flight/presentation/viewmodel/search_viewmodel/SearchViewModel.dart';
+import 'package:booking_flight/data/SearchViewModel.dart';
 import 'package:booking_flight/presentation/viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -474,8 +474,8 @@ class AdditionalServicesScreen extends StatelessWidget {
                                       final service = viewModel.additionalServices[index];
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
                                               passengerViewModel.getFullName(index),
@@ -484,34 +484,28 @@ class AdditionalServicesScreen extends StatelessWidget {
                                                 fontWeight: FontWeight.bold,
                                               ),
                                             ),
-                                            const Spacer(),
-                                            Column(
-                                              crossAxisAlignment: CrossAxisAlignment.end,
-                                              children: [
-                                                Text(
-                                                  'Baggage: ${service.baggagePackage ?? 'None'} - ${viewModel.formatCurrency(service.baggageCost)} VND',
-                                                  style: AppTextStyle.caption2.copyWith(
-                                                    fontSize: 12,
-                                                    color: Colors.black54,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  'Meal: ${service.meal ?? 'None'} - ${viewModel.formatCurrency(service.mealCost)} VND',
-                                                  style: AppTextStyle.caption2.copyWith(
-                                                    fontSize: 12,
-                                                    color: Colors.black54,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 4),
-                                                Text(
-                                                  'Seat: ${service.seatSelection ?? 'None'} - ${viewModel.formatCurrency(service.seatCost)} VND',
-                                                  style: AppTextStyle.caption2.copyWith(
-                                                    fontSize: 12,
-                                                    color: Colors.black54,
-                                                  ),
-                                                ),
-                                              ],
+                                            Text(
+                                              'Baggage: ${service.baggagePackage ?? 'None'} - ${viewModel.formatCurrency(service.baggageCost)} VND',
+                                              style: AppTextStyle.caption2.copyWith(
+                                                fontSize: 12,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Meal: ${service.meal ?? 'None'} ${service.mealQuantity > 0 ? '(x${service.mealQuantity})' : ''} - ${viewModel.formatCurrency(service.mealCost)} VND',
+                                              style: AppTextStyle.caption2.copyWith(
+                                                fontSize: 12,
+                                                color: Colors.black54,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              'Seat: ${service.seatSelection ?? 'None'} - ${viewModel.formatCurrency(service.seatCost)} VND',
+                                              style: AppTextStyle.caption2.copyWith(
+                                                fontSize: 12,
+                                                color: Colors.black54,
+                                              ),
                                             ),
                                           ],
                                         ),

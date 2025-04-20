@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../../data/search_flight_data.dart';
 import '../../view/home/Detail_flight_tickets.dart';
-import 'SearchViewModel.dart';
+import '../../../data/SearchViewModel.dart';
 
 class FlightTicketViewModel extends ChangeNotifier {
   FlightData? _flightData;

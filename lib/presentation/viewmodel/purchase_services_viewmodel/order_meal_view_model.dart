@@ -9,6 +9,7 @@ class OrderMealViewModel extends ChangeNotifier {
   final PassengerInfoViewModel passengerInfoViewModel;
   final AdditionalServicesViewModel additionalServicesViewModel;
   List<Map<String, dynamic>> mealSelections = [];
+  int? selectedPassenger;
 
   OrderMealViewModel({
     required this.flightData,
@@ -19,59 +20,70 @@ class OrderMealViewModel extends ChangeNotifier {
   }
 
   void _initMealSelections() {
-    mealSelections = passengerInfoViewModel.passengers
-        .asMap()
-        .entries
-        .map((entry) {
-      final index = entry.key;
-      final service = additionalServicesViewModel.additionalServices[index];
+    if (passengerInfoViewModel.passengers.isEmpty || meals.isEmpty) {
+      mealSelections = [];
+      selectedPassenger = null;
+      notifyListeners();
+      return;
+    }
+
+    mealSelections = List.generate(passengerInfoViewModel.passengers.length, (passengerIndex) {
+      final service = passengerIndex < additionalServicesViewModel.additionalServices.length
+          ? additionalServicesViewModel.additionalServices[passengerIndex]
+          : null;
       return {
-        'passengerIndex': index,
-        'passengerName': passengerInfoViewModel.getFullName(index),
+        'passengerIndex': passengerIndex,
+        'passengerName': passengerInfoViewModel.getFullName(passengerIndex),
         'meals': meals.map((meal) {
           return {
-            'name': meal['name'],
-            'price': meal['price'] as double,
-            'image': meal['image'],
-            'quantity': service.meal == meal['name'] ? 1 : 0, // Thay mealPackage thành meal
+            'name': meal['name'] as String,
+            'price': (meal['price'] as num).toDouble(),
+            'image': meal['image'] as String,
+            'quantity': service?.meal == meal['name'] ? 1 : 0,
           };
         }).toList(),
       };
-    }).toList();
+    });
+    selectedPassenger = 0; // Chọn hành khách đầu tiên mặc định
     notifyListeners();
   }
 
-  void updateMealQuantity(int passengerIndex, int mealIndex, int quantity) {
-    if (quantity < 0) return;
+  void togglePassengerSelection(int passengerIndex) {
+    selectedPassenger = passengerIndex;
+    notifyListeners();
+  }
 
-    // Đặt lại số lượng của tất cả các bữa ăn khác về 0 cho hành khách này
-    for (int i = 0; i < mealSelections[passengerIndex]['meals'].length; i++) {
-      if (i != mealIndex) {
-        mealSelections[passengerIndex]['meals'][i]['quantity'] = 0;
-      }
+  void updateMealQuantity(int mealIndex, int quantity) {
+    if (selectedPassenger == null ||
+        mealIndex < 0 ||
+        mealIndex >= mealSelections[selectedPassenger!]['meals'].length ||
+        quantity < 0) {
+      return;
     }
 
-    // Cập nhật số lượng cho bữa ăn được chọn
-    mealSelections[passengerIndex]['meals'][mealIndex]['quantity'] = quantity;
+    // Cập nhật số lượng cho món ăn được chọn
+    mealSelections[selectedPassenger!]['meals'][mealIndex]['quantity'] = quantity;
 
-    // Cập nhật meal và mealCost trong AdditionalServicesViewModel
-    final selectedMeal = mealSelections[passengerIndex]['meals'][mealIndex];
+    // Cập nhật additionalServicesViewModel
+    final selectedMeal = mealSelections[selectedPassenger!]['meals'][mealIndex];
     if (quantity > 0) {
+      final mealPrice = (selectedMeal['price'] as double) * quantity;
       additionalServicesViewModel.updateMeal(
-        passengerIndex,
-        selectedMeal['name'],
-        selectedMeal['price'] * quantity,
+        selectedPassenger!,
+        selectedMeal['name'] as String,
+        mealPrice,
+        quantity,
       );
     } else {
-      additionalServicesViewModel.updateMeal(passengerIndex, null, 0.0);
+      additionalServicesViewModel.updateMeal(selectedPassenger!, null, 0.0, 0);
     }
     notifyListeners();
   }
-
   double getTotalMealCost() {
     double total = 0.0;
     for (var selection in mealSelections) {
-      for (var meal in selection['meals']) {
+      final meals = selection['meals'] as List<Map<String, dynamic>>;
+      for (var meal in meals) {
         total += (meal['quantity'] as int) * (meal['price'] as double);
       }
     }
@@ -81,14 +93,35 @@ class OrderMealViewModel extends ChangeNotifier {
   int getTotalMealCount() {
     int total = 0;
     for (var selection in mealSelections) {
-      for (var meal in selection['meals']) {
-        total += meal['quantity'] as int;
+      final meals = selection['meals'] as List<Map<String, dynamic>>;
+      for (var meal in meals) {
+        total += (meal['quantity'] as num?)?.toInt() ?? 0; // Xử lý null
       }
     }
     return total;
   }
 
+  int getTotalMealCountForPassenger(int passengerIndex) {
+    if (passengerIndex < 0 || passengerIndex >= mealSelections.length) return 0;
+    final meals = mealSelections[passengerIndex]['meals'] as List<Map<String, dynamic>>;
+    return meals.fold(0, (sum, meal) => sum + ((meal['quantity'] as num?)?.toInt() ?? 0));
+  }
+
   String getFormattedTotalMealCost() {
     return additionalServicesViewModel.formatCurrency(getTotalMealCost());
   }
+
+  String getFormattedTotalMealCostForPassenger(int passengerIndex) {
+    if (passengerIndex < 0 || passengerIndex >= mealSelections.length) {
+      return additionalServicesViewModel.formatCurrency(0.0);
+    }
+    final selection = mealSelections[passengerIndex];
+    final meals = selection['meals'] as List<Map<String, dynamic>>;
+    final total = meals.fold<double>(
+      0.0,
+          (sum, meal) => sum + (meal['quantity'] as int) * (meal['price'] as double),
+    );
+    return additionalServicesViewModel.formatCurrency(total);
+  }
+
 }

@@ -2,7 +2,7 @@ import 'package:booking_flight/data/additional_services_data.dart';
 import 'package:booking_flight/data/search_flight_data.dart';
 import 'package:booking_flight/presentation/view/home/Detail_flight_tickets.dart';
 import 'package:booking_flight/presentation/viewmodel/home/Detail_flight_tickets_view_model.dart';
-import 'package:booking_flight/presentation/viewmodel/search_viewmodel/SearchViewModel.dart';
+import 'package:booking_flight/data/SearchViewModel.dart';
 import 'package:booking_flight/presentation/viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -58,7 +58,7 @@ class AdditionalServicesViewModel extends ChangeNotifier {
       }
       final service = AdditionalServicesData(
         passengerName: passengerInfoViewModel.getFullName(index),
-        passengerType: passenger.type ?? 'Unknown',
+        passengerType: passenger.type,
         passengerAge: passengerInfoViewModel.getAge(index).clamp(0, 150),
       );
       debugPrint(
@@ -75,14 +75,15 @@ class AdditionalServicesViewModel extends ChangeNotifier {
     }
   }
 
-  void updateMeal(int index, String? meal, double cost) {
+  void updateMeal(int index, String? meal, double cost, int quantity) {
     if (index >= 0 && index < _additionalServices.length) {
-      _additionalServices[index].updateMeal(meal, cost);
+      _additionalServices[index].updateMeal(meal, cost, quantity);
       _updateTotal();
       notifyListeners();
+    } else {
+      debugPrint('Error: Invalid index $index for additional services');
     }
   }
-
   void toggleComprehensiveInsurance(bool value) {
     _comprehensiveInsurance = value;
     _updateTotal();

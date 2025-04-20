@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/widget/tab_bar_widget.dart';
 import '../../../data/search_flight_data.dart';
-import '../../viewmodel/search_viewmodel/SearchViewModel.dart';
+import '../../../data/SearchViewModel.dart';
 import '../../viewmodel/search_viewmodel/search_flight_tiket_view_model.dart';
 import '../home/one_way_trip_form_view.dart';
 import '../home/round_trip_form_view.dart';

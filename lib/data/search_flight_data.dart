@@ -107,7 +107,7 @@ final List<FlightData> flightDataList = [
 
   // --- One-way ---
   FlightData(
-    airlineLogo: 'assets/logo/Vietnam-Airlines.png',
+    airlineLogo: 'assets/logo/vn airlines.png',
     airlineName: 'Vietnam Airlines',
     departureTime: '07:15',
     arrivalTime: '09:30',
@@ -154,7 +154,7 @@ final List<FlightData> flightDataList = [
     passengerCount: '2 passengers',
   ),
   FlightData(
-    airlineLogo: 'assets/logo/Vietnam-Airlines.png',
+    airlineLogo: 'assets/logo/vn airlines.png',
     airlineName: 'Vietnam Airlines',
     departureTime: '13:00',
     arrivalTime: '15:00',
@@ -167,7 +167,7 @@ final List<FlightData> flightDataList = [
     price: '5.200.000 VND',
     flightCode: 'VN456',
     departureAirport: 'HAN',
-    arrivalAirport: 'DLI',
+    arrivalAirport: 'DIN',
     passengerCount: '1 passenger',
   ),
   FlightData(

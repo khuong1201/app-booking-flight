@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/search_flight_data.dart';
-import '../search_viewmodel/SearchViewModel.dart';
+import '../../../data/SearchViewModel.dart';
 
 class DetailFlightTicketsViewModel extends ChangeNotifier {
   final FlightData? flightData;

@@ -51,184 +51,210 @@ class CheckedBaggageScreen extends StatelessWidget {
           ),
         ),
         body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Consumer<CheckedBaggageViewModel>(
-              builder: (context, viewModel, child) {
-                // Lấy tên thành phố từ mã sân bay
-                final departureAirportCity = getAirportCity(flightData.departureAirport);
-                final arrivalAirportCity = getAirportCity(flightData.arrivalAirport);
-
-                return SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Flight Info Section
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(8),
+          child: Stack(
+            children: [
+              // Main content (scrollable)
+              Container(
+                color: Color(0xFFE3E8F7),
+                child: Center(
+                  child: Container(
+                    margin: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
                         ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Logo hãng máy bay
-                            Image.asset(
-                              flightData.airlineLogo,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) => const Icon(
-                                Icons.flight,
-                                size: 40,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            // Thông tin chuyến bay
-                            Expanded(
-                              child: Column(
+                      ],
+                    ),
+                    child: Consumer<CheckedBaggageViewModel>(
+                      builder: (context, viewModel, child) {
+                        final departureAirportCity = getAirportCity(flightData.departureAirport);
+                        final arrivalAirportCity = getAirportCity(flightData.arrivalAirport);
+
+                        return SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 8),
+                              // Flight information (moved outside ListView.builder)
+                              Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
-                                    style: AppTextStyle.body3.copyWith(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                  Image.asset(
+                                    flightData.airlineLogo,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.flight,
+                                      size: 40,
+                                      color: Colors.grey,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    airlineInfo,
-                                    style: AppTextStyle.caption2.copyWith(
-                                      fontSize: 14,
-                                      color: Colors.black54,
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
+                                          style: AppTextStyle.body3.copyWith(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          airlineInfo,
+                                          style: AppTextStyle.caption2.copyWith(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Passenger Info Section
-                      const SizedBox(height: 8),
-                      Consumer<PassengerInfoViewModel>(
-                        builder: (context, passengerViewModel, child) {
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            itemCount: passengerViewModel.passengers.length,
-                            itemBuilder: (context, index) {
-                              final service = additionalServicesViewModel.additionalServices[index];
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    // Thông tin hành khách
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          passengerViewModel.getFullName(index),
-                                          style: AppTextStyle.paragraph2.copyWith(fontWeight: FontWeight.bold),
+                              const SizedBox(height: 16),
+                              const Divider(),
+                              // Passenger list
+                              Consumer<PassengerInfoViewModel>(
+                                builder: (context, passengerViewModel, child) {
+                                  return ListView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: passengerViewModel.passengers.length,
+                                    itemBuilder: (context, index) {
+                                      final service = additionalServicesViewModel.additionalServices[index];
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  passengerViewModel.getFullName(index),
+                                                  style: AppTextStyle.paragraph2.copyWith(fontWeight: FontWeight.bold),
+                                                ),
+                                                Text(
+                                                  'Total: ${service.baggagePackage ?? 'None'}',
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            GridView.count(
+                                              crossAxisCount: 2,
+                                              shrinkWrap: true,
+                                              physics: const NeverScrollableScrollPhysics(),
+                                              crossAxisSpacing: 16,
+                                              mainAxisSpacing: 16,
+                                              childAspectRatio: 1.2,
+                                              padding: const EdgeInsets.all(8),
+                                              children: [
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: '20kg Package',
+                                                  price: 216000,
+                                                  isSelected: service.baggagePackage == '20kg',
+                                                  onTap: () => viewModel.selectBaggage(index, '20kg', 216000),
+                                                ),
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: '30kg Package',
+                                                  price: 324000,
+                                                  isSelected: service.baggagePackage == '30kg',
+                                                  onTap: () => viewModel.selectBaggage(index, '30kg', 324000),
+                                                ),
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: '40kg Package',
+                                                  price: 432000,
+                                                  isSelected: service.baggagePackage == '40kg',
+                                                  onTap: () => viewModel.selectBaggage(index, '40kg', 432000),
+                                                ),
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: '50kg Package',
+                                                  price: 584000,
+                                                  isSelected: service.baggagePackage == '50kg',
+                                                  onTap: () => viewModel.selectBaggage(index, '50kg', 584000),
+                                                ),
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: '60kg Package',
+                                                  price: 702000,
+                                                  isSelected: service.baggagePackage == '60kg',
+                                                  onTap: () => viewModel.selectBaggage(index, '60kg', 702000),
+                                                ),
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: '70kg Package',
+                                                  price: 810000,
+                                                  isSelected: service.baggagePackage == '70kg',
+                                                  onTap: () => viewModel.selectBaggage(index, '70kg', 810000),
+                                                ),
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: 'Oversized Baggage 20kg',
+                                                  price: 480000,
+                                                  isSelected: service.baggagePackage == 'Oversized 20kg',
+                                                  onTap: () => viewModel.selectBaggage(index, 'Oversized 20kg', 480000),
+                                                ),
+                                                _buildBaggageOption(
+                                                  context: context,
+                                                  viewModel: viewModel,
+                                                  weight: 'Oversized Baggage 30kg',
+                                                  price: 594000,
+                                                  isSelected: service.baggagePackage == 'Oversized 30kg',
+                                                  onTap: () => viewModel.selectBaggage(index, 'Oversized 30kg', 594000),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 8),
+                                            const Divider(),
+                                          ],
                                         ),
-                                        Text(
-                                          'Total: ${service.baggagePackage ?? 'None'}',
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    // GridView cho các gói hành lý
-                                    GridView.count(
-                                      crossAxisCount: 2,
-                                      shrinkWrap: true,
-                                      physics: const NeverScrollableScrollPhysics(),
-                                      crossAxisSpacing: 16,
-                                      mainAxisSpacing: 16,
-                                      childAspectRatio: 1.2,
-                                      padding: const EdgeInsets.all(8),
-                                      children: [
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: '20kg Package',
-                                          price: 216000,
-                                          isSelected: service.baggagePackage == '20kg',
-                                          onTap: () => viewModel.selectBaggage(index, '20kg', 216000),
-                                        ),
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: '30kg Package',
-                                          price: 324000,
-                                          isSelected: service.baggagePackage == '30kg',
-                                          onTap: () => viewModel.selectBaggage(index, '30kg', 324000),
-                                        ),
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: '40kg Package',
-                                          price: 432000,
-                                          isSelected: service.baggagePackage == '40kg',
-                                          onTap: () => viewModel.selectBaggage(index, '40kg', 432000),
-                                        ),
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: '50kg Package',
-                                          price: 584000,
-                                          isSelected: service.baggagePackage == '50kg',
-                                          onTap: () => viewModel.selectBaggage(index, '50kg', 584000),
-                                        ),
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: '60kg Package',
-                                          price: 702000,
-                                          isSelected: service.baggagePackage == '60kg',
-                                          onTap: () => viewModel.selectBaggage(index, '60kg', 702000),
-                                        ),
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: '70kg Package',
-                                          price: 810000,
-                                          isSelected: service.baggagePackage == '70kg',
-                                          onTap: () => viewModel.selectBaggage(index, '70kg', 810000),
-                                        ),
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: 'Oversized Baggage 20kg',
-                                          price: 480000,
-                                          isSelected: service.baggagePackage == 'Oversized 20kg',
-                                          onTap: () => viewModel.selectBaggage(index, 'Oversized 20kg', 480000),
-                                        ),
-                                        _buildBaggageOption(
-                                          context: context,
-                                          viewModel: viewModel,
-                                          weight: 'Oversized Baggage 30kg',
-                                          price: 594000,
-                                          isSelected: service.baggagePackage == 'Oversized 30kg',
-                                          onTap: () => viewModel.selectBaggage(index, 'Oversized 30kg', 594000),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      // Total Amount Section
-                      Row(
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                              const SizedBox(height: 100), // Add space to avoid overlap with bottom bar
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              // Fixed bottom bar
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.all(16),
+                  child: Consumer<CheckedBaggageViewModel>(
+                    builder: (context, viewModel, child) {
+                      return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
@@ -254,13 +280,12 @@ class CheckedBaggageScreen extends StatelessWidget {
                             child: const Text('Select'),
                           ),
                         ],
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

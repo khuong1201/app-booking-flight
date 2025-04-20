@@ -8,6 +8,7 @@ class AdditionalServicesData {
   double seatCost; // Chi phí ghế
   String? meal; // Bữa ăn được chọn
   double mealCost; // Chi phí bữa ăn
+  int mealQuantity; // Số lượng món ăn
 
   AdditionalServicesData({
     required this.passengerName,
@@ -19,6 +20,7 @@ class AdditionalServicesData {
     this.seatCost = 0,
     this.meal,
     this.mealCost = 0,
+    this.mealQuantity = 0, // Khởi tạo mặc định là 0
   });
 
   // Tính tổng chi phí dịch vụ bổ sung cho hành khách
@@ -37,8 +39,25 @@ class AdditionalServicesData {
   }
 
   // Cập nhật bữa ăn
-  void updateMeal(String? meal, double cost) {
+  void updateMeal(String? meal, double cost, int quantity) { // Thêm quantity
     this.meal = meal;
     mealCost = cost;
+    mealQuantity = quantity; // Lưu số lượng món ăn
+  }
+
+  // Chuyển đổi sang JSON nếu cần
+  Map<String, dynamic> toJson() {
+    return {
+      'passengerName': passengerName,
+      'passengerType': passengerType,
+      'passengerAge': passengerAge,
+      'baggagePackage': baggagePackage,
+      'baggageCost': baggageCost,
+      'seatSelection': seatSelection,
+      'seatCost': seatCost,
+      'meal': meal,
+      'mealCost': mealCost,
+      'mealQuantity': mealQuantity, // Thêm vào JSON
+    };
   }
 }

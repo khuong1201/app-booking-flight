@@ -6,7 +6,7 @@ import '../../view/search_view/search_flight_tiket_view.dart';
 import '../../view/search_view/search_number_of_passenger_view.dart';
 import '../../view/search_view/search_place_view.dart';
 import '../../view/search_view/search_seat_view.dart';
-import '../search_viewmodel/SearchViewModel.dart';
+import '../../../data/SearchViewModel.dart';
 
 class OneWayTripViewModel extends ChangeNotifier implements SearchViewModel {
   Map<String, String>? _departureAirport;

@@ -10,7 +10,7 @@ import '../../viewmodel/home/Detail_flight_tickets_view_model.dart';
 import '../../viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
 import '../purcharse_services_view/addition_services_view.dart';
 import '../../../data/search_flight_data.dart';
-import '../../viewmodel/search_viewmodel/SearchViewModel.dart';
+import '../../../data/SearchViewModel.dart';
 
 class PassengerInfoScreen extends StatelessWidget {
   final DetailFlightTicketsViewModel detailViewModel;
@@ -118,85 +118,95 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       builder: (context, vm, detailVM, child) {
         return Scaffold(
           appBar: _buildAppBar(context),
-          body: Container(
-            color: const Color(0xFFE3E8F7),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 16,right: 16,top: 16),
+          body: SafeArea(
+            child: Stack(
+              children: [
+                // Scrollable content
+                Container(
+                  color: const Color(0xFFE3E8F7),
+                  child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSectionTitle('CONTACT INFORMATION'),
-                        _buildDescription(
-                          'Contact information will be used to confirm booking or receive notification from airlines/ agency in case the flight changes.',
+                        Padding(
+                          padding: EdgeInsets.only(left: 16, right: 16, top: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('CONTACT INFORMATION'),
+                              _buildDescription(
+                                'Contact information will be used to confirm booking or receive notification from airlines/ agency in case the flight changes.',
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(height: 24),
+                        Padding(
+                          padding: EdgeInsets.only(left: 16, right: 16),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: _buildContactInfoSection(vm),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Padding(
+                          padding: EdgeInsets.only(left: 16, right: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('PASSENGER INFORMATION'),
+                              _buildDescription(
+                                'You must enter your full name with the same order as one in your Passport/ ID card/ TCR for adult or Children’s Birth certificate.',
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: _buildPassengerInfoSection(vm),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.only(left: 16, right: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                          ),
+                          child: _buildSaveContactSwitch(vm),
+                        ),
+                        const SizedBox(height: 100), // Space to avoid overlap with bottom bar
                       ],
                     ),
                   ),
-                  const SizedBox(height: 24,),
-                  Padding(
-                    padding: EdgeInsets.only(left: 16,right: 16,),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: _buildContactInfoSection(vm),
-                    ),
-                  ),
-                  const SizedBox(height: 24,),
-                  Padding(
-                    padding: EdgeInsets.only(left: 16,right: 16,),
+                ),
+                // Fixed bottom bar
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(16),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildSectionTitle('PASSENGER INFORMATION'),
-                        _buildDescription(
-                          'You must enter your full name with the same order as one in your Passport/ ID card/ TCR for adult or Children’s Birth certificate.',
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16,),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: _buildPassengerInfoSection(vm),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.only(left: 16,right: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                    ),
-                    child: _buildSaveContactSwitch(vm),
-                  ),
-                  const SizedBox(height: 24),
-                  Container(
-                    padding: const EdgeInsets.only(bottom: 16,left: 16,right: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                    ),
-                    child:Column(
                       children: [
                         _buildTotalAmountExpansionTile(vm, detailVM),
                         _buildContinueButton(vm, detailVM),
                       ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
@@ -241,18 +251,26 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Phone number',style: AppTextStyle.paragraph1.copyWith(color: AppColors.neutralColor),),
+        Text(
+          'Phone number',
+          style: AppTextStyle.paragraph1.copyWith(color: AppColors.neutralColor),
+        ),
         _buildTextField(
           'Phone number',
           _phoneController,
               (val) => vm.updateContactInfo(phoneNumber: val),
+          validator: vm.validatePhoneNumber,
         ),
         const SizedBox(height: 12),
-        Text('Email',style: AppTextStyle.paragraph1.copyWith(color: AppColors.neutralColor),),
+        Text(
+          'Email',
+          style: AppTextStyle.paragraph1.copyWith(color: AppColors.neutralColor),
+        ),
         _buildTextField(
           'Email',
           _emailController,
               (val) => vm.updateContactInfo(email: val),
+          validator: vm.validateEmail,
         ),
       ],
     );
@@ -268,6 +286,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
           .toList(),
     );
   }
+
   Widget _buildSaveContactSwitch(PassengerInfoViewModel vm) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -284,7 +303,8 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildTotalAmountExpansionTile(PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
+  Widget _buildTotalAmountExpansionTile(
+      PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
     return ExpansionTile(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -301,7 +321,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       ),
       children: <Widget>[
         Container(
-          width: 379,
+          width: double.infinity,
           decoration: const BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(8)),
             color: Color(0xFFE3E8F7),
@@ -316,7 +336,9 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                     Row(
                       children: [
                         Image.asset(
-                          detailVM.airlineLogo.isNotEmpty ? detailVM.airlineLogo : 'assets/default_logo.png',
+                          detailVM.airlineLogo.isNotEmpty
+                              ? detailVM.airlineLogo
+                              : 'assets/default_logo.png',
                           height: 40,
                           width: 40,
                           fit: BoxFit.contain,
@@ -355,33 +377,32 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildContinueButton(PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
+  Widget _buildContinueButton(
+      PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
     return SizedBox(
-      width: 379,
+      width: double.infinity,
       height: 60,
       child: ElevatedButton(
         onPressed: () {
-          bool isValid = true;
-          for (var passenger in vm.allPassengers) {
-            if (passenger.lastName == null ||
-                passenger.lastName!.isEmpty ||
-                passenger.firstName == null ||
-                passenger.firstName!.isEmpty ||
-                passenger.dateOfBirth == null ||
-                passenger.gender == null) {
-              isValid = false;
+          String? errorMessage;
+          for (int i = 0; i < vm.allPassengers.length; i++) {
+            final error = vm.validatePassenger(vm.allPassengers[i]);
+            if (error != null) {
+              errorMessage = 'Passenger ${i + 1}: $error';
               break;
             }
           }
-          if (vm.phoneNumber.isEmpty || vm.email.isEmpty) {
-            isValid = false;
+          if (errorMessage == null) {
+            if (vm.validatePhoneNumber(vm.phoneNumber) != null) {
+              errorMessage = vm.validatePhoneNumber(vm.phoneNumber);
+            } else if (vm.validateEmail(vm.email) != null) {
+              errorMessage = vm.validateEmail(vm.email);
+            }
           }
 
-          if (!isValid) {
+          if (errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Please fill in all required passenger and contact information.'),
-              ),
+              SnackBar(content: Text(errorMessage)),
             );
             return;
           }
@@ -447,8 +468,9 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   Widget _buildTextField(
       String label,
       TextEditingController controller,
-      ValueChanged<String> onChanged,
-      ) {
+      ValueChanged<String> onChanged, {
+        String? Function(String?)? validator,
+      }) {
     return TextField(
       style: AppTextStyle.body2.copyWith(
         color: controller.text.isNotEmpty
@@ -460,11 +482,9 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
         floatingLabelBehavior: FloatingLabelBehavior.always,
         hintText: label,
         border: const OutlineInputBorder(),
+        errorText: validator != null ? validator(controller.text) : null,
       ),
-      onChanged: (value) {
-        setState(() {});
-        onChanged(value);
-      },
+      onChanged: onChanged,
     );
   }
 
@@ -502,6 +522,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               'Example: NGUYEN',
               lastNameController,
                   (val) => vm.updatePassenger(index: index, lastName: val),
+              validator: (val) => val == null || val.isEmpty ? 'Last name is required' : null,
             ),
             const SizedBox(height: 12),
             const Align(
@@ -512,6 +533,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               'Middle & First name',
               firstNameController,
                   (val) => vm.updatePassenger(index: index, firstName: val),
+              validator: (val) => val == null || val.isEmpty ? 'First name is required' : null,
             ),
             const SizedBox(height: 12),
             Row(
@@ -567,6 +589,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             );
           }).toList(),
           onChanged: (val) => vm.updatePassenger(index: index, gender: val),
+          validator: (val) => val == null || val.isEmpty ? 'Gender is required' : null,
         ),
       ],
     );
@@ -585,25 +608,21 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
         TextField(
           style: AppTextStyle.body2.copyWith(color: AppColors.primaryColor),
           controller: dobController,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+          readOnly: true,
+          enableInteractiveSelection: false,
+          keyboardType: TextInputType.none,
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
             hintText: 'DD/MM/YYYY',
+            errorText: passenger.dateOfBirth == null ? 'Date of birth is required' : null,
           ),
-          onChanged: (val) {
-            vm.updatePassenger(index: index, dateOfBirthRaw: val);
-          },
-          onTap: () async {
-            DateTime? pickedDate = await showDatePicker(
+          onTap: () {
+            vm.selectDateOfBirth(
               context: context,
-              initialDate: passenger.dateOfBirth ?? DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime.now(),
+              passengerIndex: index,
+              passenger: passenger,
+              dobController: dobController,
             );
-            if (pickedDate != null) {
-              final formattedDate = DateFormat('dd/MM/yyyy').format(pickedDate);
-              dobController.text = formattedDate;
-              vm.updatePassenger(index: index, dateOfBirth: pickedDate);
-            }
           },
         ),
       ],
@@ -654,9 +673,12 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                 : const Color(0xFF9C9C9C),
           ),
           controller: documentNumberController,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
             hintText: 'Input Number',
+            errorText: documentNumberController.text.isEmpty
+                ? 'Document number is required'
+                : null,
           ),
           onChanged: (val) => vm.updatePassenger(index: index, documentNumber: val),
         ),
