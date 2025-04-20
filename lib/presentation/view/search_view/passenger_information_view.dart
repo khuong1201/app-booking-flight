@@ -66,6 +66,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   late final List<TextEditingController> _firstNameControllers;
   late final List<TextEditingController> _dobControllers;
   late final List<TextEditingController> _documentNumberControllers;
+  bool _showValidationErrors = false;
 
   @override
   void initState() {
@@ -121,7 +122,6 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
           body: SafeArea(
             child: Stack(
               children: [
-                // Scrollable content
                 Container(
                   color: const Color(0xFFE3E8F7),
                   child: SingleChildScrollView(
@@ -134,6 +134,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildSectionTitle('CONTACT INFORMATION'),
+                              SizedBox(height: 8,),
                               _buildDescription(
                                 'Contact information will be used to confirm booking or receive notification from airlines/ agency in case the flight changes.',
                               ),
@@ -159,6 +160,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildSectionTitle('PASSENGER INFORMATION'),
+                              SizedBox(height: 8,),
                               _buildDescription(
                                 'You must enter your full name with the same order as one in your Passport/ ID card/ TCR for adult or Children’s Birth certificate.',
                               ),
@@ -185,12 +187,11 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                           ),
                           child: _buildSaveContactSwitch(vm),
                         ),
-                        const SizedBox(height: 100), // Space to avoid overlap with bottom bar
+                        const SizedBox(height: 180),
                       ],
                     ),
                   ),
                 ),
-                // Fixed bottom bar
                 Positioned(
                   left: 0,
                   right: 0,
@@ -384,6 +385,10 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       height: 60,
       child: ElevatedButton(
         onPressed: () {
+          setState(() {
+            _showValidationErrors = true;
+          });
+
           String? errorMessage;
           for (int i = 0; i < vm.allPassengers.length; i++) {
             final error = vm.validatePassenger(vm.allPassengers[i]);
@@ -406,6 +411,10 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             );
             return;
           }
+
+          setState(() {
+            _showValidationErrors = false;
+          });
 
           vm.logInfo();
           final jsonOutput = jsonEncode(vm.toJson());
@@ -461,7 +470,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   Widget _buildDescription(String text) {
     return Text(
       text,
-      style: const TextStyle(fontSize: 12, color: Colors.grey),
+      style: AppTextStyle.caption1.copyWith(color: Colors.grey),
     );
   }
 
@@ -482,9 +491,17 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
         floatingLabelBehavior: FloatingLabelBehavior.always,
         hintText: label,
         border: const OutlineInputBorder(),
-        errorText: validator != null ? validator(controller.text) : null,
+        errorText: _showValidationErrors && validator != null
+            ? validator(controller.text)
+            : null,
+        errorStyle: const TextStyle(color: AppColors.secondaryColor),
       ),
-      onChanged: onChanged,
+      onChanged: (value) {
+        onChanged(value);
+        if (_showValidationErrors) {
+          setState(() {});
+        }
+      },
     );
   }
 
@@ -522,7 +539,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               'Example: NGUYEN',
               lastNameController,
                   (val) => vm.updatePassenger(index: index, lastName: val),
-              validator: (val) => val == null || val.isEmpty ? 'Last name is required' : null,
+              validator: (val) => val == null || val.isEmpty ? 'Last name is not null' : null,
             ),
             const SizedBox(height: 12),
             const Align(
@@ -533,12 +550,13 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               'Middle & First name',
               firstNameController,
                   (val) => vm.updatePassenger(index: index, firstName: val),
-              validator: (val) => val == null || val.isEmpty ? 'First name is required' : null,
+              validator: (val) => val == null || val.isEmpty ? 'First name is not null' : null,
             ),
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
+                SizedBox(
+                  width: 120,
                   child: _buildGenderDropdown(passenger, index, vm),
                 ),
                 const SizedBox(width: 12),
@@ -550,7 +568,8 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             const SizedBox(height: 12),
             Row(
               children: [
-                Expanded(
+                SizedBox(
+                  width: 120,
                   child: _buildDocumentTypeDropdown(passenger, index, vm),
                 ),
                 const SizedBox(width: 12),
@@ -577,9 +596,13 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
         const Text('Gender'),
         DropdownButtonFormField<String>(
           style: AppTextStyle.body2.copyWith(color: AppColors.primaryColor),
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
             hintText: 'Choose',
+            errorText: _showValidationErrors && passenger.gender == null
+                ? 'Gender is not null'
+                : null,
+            errorStyle: const TextStyle(color: AppColors.secondaryColor),
           ),
           value: passenger.gender,
           items: ['Male', 'Female'].map((String value) {
@@ -588,8 +611,12 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               child: Text(value),
             );
           }).toList(),
-          onChanged: (val) => vm.updatePassenger(index: index, gender: val),
-          validator: (val) => val == null || val.isEmpty ? 'Gender is required' : null,
+          onChanged: (val) {
+            vm.updatePassenger(index: index, gender: val);
+            if (_showValidationErrors) {
+              setState(() {});
+            }
+          },
         ),
       ],
     );
@@ -614,7 +641,10 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             hintText: 'DD/MM/YYYY',
-            errorText: passenger.dateOfBirth == null ? 'Date of birth is required' : null,
+            errorText: _showValidationErrors && passenger.dateOfBirth == null
+                ? 'Date of birth is not null'
+                : null,
+            errorStyle: const TextStyle(color: AppColors.secondaryColor),
           ),
           onTap: () {
             vm.selectDateOfBirth(
@@ -622,7 +652,11 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               passengerIndex: index,
               passenger: passenger,
               dobController: dobController,
-            );
+            ).then((_) {
+              if (_showValidationErrors) {
+                setState(() {});
+              }
+            });
           },
         ),
       ],
@@ -651,7 +685,12 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               child: Text(value),
             );
           }).toList(),
-          onChanged: (val) => vm.updatePassenger(index: index, documentType: val),
+          onChanged: (val) {
+            vm.updatePassenger(index: index, documentType: val);
+            if (_showValidationErrors) {
+              setState(() {});
+            }
+          },
         ),
       ],
     );
@@ -676,11 +715,17 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             hintText: 'Input Number',
-            errorText: documentNumberController.text.isEmpty
-                ? 'Document number is required'
+            errorText: _showValidationErrors && documentNumberController.text.isEmpty
+                ? 'Document number is not null'
                 : null,
+            errorStyle: const TextStyle(color: AppColors.secondaryColor),
           ),
-          onChanged: (val) => vm.updatePassenger(index: index, documentNumber: val),
+          onChanged: (val) {
+            vm.updatePassenger(index: index, documentNumber: val);
+            if (_showValidationErrors) {
+              setState(() {});
+            }
+          },
         ),
       ],
     );

@@ -321,7 +321,6 @@ class TicketDetailsView extends StatelessWidget {
       ),
     );
   }
-
   Widget buildExpandableSection({
     required String title,
     required Widget content,

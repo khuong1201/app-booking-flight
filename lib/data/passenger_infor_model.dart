@@ -1,4 +1,3 @@
-
 class ContactInfo {
   String? _phoneNumber;
   String? _email;
@@ -12,6 +11,13 @@ class ContactInfo {
 
   String? get email => _email;
   set email(String? value) => _email = value;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'phoneNumber': _phoneNumber,
+      'email': _email,
+    };
+  }
 
   @override
   String toString() {
@@ -60,6 +66,19 @@ class Passenger {
     if (dob != null) {
       dateOfBirth = DateTime.tryParse(dob);
     }
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'firstName': firstName,
+      'lastName': lastName,
+      'gender': gender,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
+      'type': type,
+      'idNumber': _idNumber,
+      'documentType': _documentType,
+      'documentNumber': _documentNumber,
+    };
   }
 
   @override

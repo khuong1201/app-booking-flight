@@ -1,6 +1,5 @@
 import 'airport_data.dart';
 
-// Thông tin chuyến bay
 class FlightData {
   final String airlineName;
   final String airlineLogo;

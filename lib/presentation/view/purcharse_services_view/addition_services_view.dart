@@ -3,6 +3,7 @@ import 'package:booking_flight/core/constants/text_styles.dart';
 import 'package:booking_flight/data/search_flight_data.dart';
 import 'package:booking_flight/presentation/view/purcharse_services_view/checked_baggage_view.dart';
 import 'package:booking_flight/presentation/view/purcharse_services_view/order_meal_view.dart';
+import 'package:booking_flight/presentation/view/purcharse_services_view/seat_selection_view.dart';
 import 'package:booking_flight/presentation/viewmodel/purchase_services_viewmodel/additional_services_view_model.dart';
 import 'package:booking_flight/data/SearchViewModel.dart';
 import 'package:booking_flight/presentation/viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
@@ -69,360 +70,475 @@ class AdditionalServicesScreen extends StatelessWidget {
         ),
         body: Container(
           color: const Color(0xFFE3E8F7),
-          child: Consumer<AdditionalServicesViewModel>(
-            builder: (context, viewModel, child) {
-              final departureAirportCity = getAirportCity(flightData.departureAirport);
-              final arrivalAirportCity = getAirportCity(flightData.arrivalAirport);
+          child: SafeArea(
+            bottom: false, // Disable bottom padding for SafeArea
+            child: Column(
+              children: [
+                // Scrollable content
+                Expanded(
+                  child: Consumer<AdditionalServicesViewModel>(
+                    builder: (context, viewModel, child) {
+                      final departureAirportCity = getAirportCity(flightData.departureAirport);
+                      final arrivalAirportCity = getAirportCity(flightData.arrivalAirport);
 
-              return SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Flight Info Section
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Logo hãng máy bay
-                          Image.asset(
-                            flightData.airlineLogo,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) => const Icon(
-                              Icons.flight,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Thông tin chuyến bay
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
-                                  style: AppTextStyle.body3.copyWith(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  viewModel.flightDateTime,
-                                  style: AppTextStyle.caption1.copyWith(
-                                    fontSize: 14,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  viewModel.airlineInfo,
-                                  style: AppTextStyle.caption2.copyWith(
-                                    fontSize: 14,
-                                    color: Colors.black54,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          // Nút mở chi tiết vé
-                          IconButton(
-                            icon: const Icon(
-                              Icons.expand_more,
-                              color: Colors.black,
-                            ),
-                            onPressed: () {
-                              viewModel.showTicketDetailsSheet(context);
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Additional Services Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'Additional Services',
-                        style: AppTextStyle.body3.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF474747),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Checked Baggage
-                          ListTile(
-                            leading: SvgPicture.asset(
-                              'assets/icons/lucide_baggage-claim.svg',
-                              width: 24,
-                              height: 24,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.black,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            title: const Text(
-                              'Checked Baggage',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            trailing: SvgPicture.asset(
-                              'assets/icons/tabler_plus.svg',
-                              width: 24,
-                              height: 24,
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => CheckedBaggageScreen(
-                                    flightData: flightData,
-                                    routerTrip:
-                                    '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
-                                    airlineInfo: viewModel.airlineInfo,
-                                    passengerInfoViewModel: passengerInfoViewModel,
-                                    additionalServicesViewModel: viewModel,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                          // Seat Selection
-                          ListTile(
-                            leading: SvgPicture.asset(
-                              'assets/icons/hugeicons_seat-selector.svg',
-                              width: 24,
-                              height: 24,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.black,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            title: const Text(
-                              'Seat Selection',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            trailing: SvgPicture.asset(
-                              'assets/icons/tabler_plus.svg',
-                              width: 24,
-                              height: 24,
-                            ),
-                            onTap: () {
-                              viewModel.addService('Seat Selection');
-                            },
-                          ),
-                          // Meal
-                          ListTile(
-                            leading: SvgPicture.asset(
-                              'assets/icons/silverware-fork-knife.svg',
-                              width: 24,
-                              height: 24,
-                              colorFilter: const ColorFilter.mode(
-                                Colors.black,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                            title: const Text(
-                              'Meal',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            trailing: SvgPicture.asset(
-                              'assets/icons/tabler_plus.svg',
-                              width: 24,
-                              height: 24,
-                            ),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => OrderMealScreen(
-                                    flightData: flightData,
-                                    routerTrip:
-                                    '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
-                                    airlineInfo: viewModel.airlineInfo,
-                                    passengerInfoViewModel: passengerInfoViewModel,
-                                    additionalServicesViewModel: viewModel,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Insurance Services Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Text(
-                        'Insurance Services',
-                        style: AppTextStyle.body3.copyWith(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF474747),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Comprehensive Travel Insurance
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Checkbox(
-                                value: viewModel.comprehensiveInsurance,
-                                onChanged: (value) =>
-                                    viewModel.toggleComprehensiveInsurance(value!),
-                                activeColor: AppColors.primaryColor,
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Comprehensive Travel Insurance',
-                                  style: AppTextStyle.paragraph2.copyWith(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.only(left: 32, bottom: 8),
-                            child: Text(
-                              '• Receive immediately 888,000 VND / person / trip for flights delayed over consecutive hours.\n'
-                                  '• Protection against accident risks, lost luggage, property, compensation up to 200,000,000 VND.',
-                              style: TextStyle(fontSize: 12, color: Colors.black87),
-                            ),
-                          ),
-                          IntrinsicWidth(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      return SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Flight Info Section
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE64F03).withOpacity(0.16),
+                                color: Colors.white,
                                 borderRadius: BorderRadius.circular(8),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                              child: const Text(
-                                '35,000 VND / passenger / trip',
-                                style: TextStyle(fontSize: 14, color: Colors.black87),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Airline Logo
+                                  Image.asset(
+                                    flightData.airlineLogo,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.flight,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  // Flight Information
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
+                                          style: AppTextStyle.body3.copyWith(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          viewModel.flightDateTime,
+                                          style: AppTextStyle.caption1.copyWith(
+                                            fontSize: 14,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          viewModel.airlineInfo,
+                                          style: AppTextStyle.caption2.copyWith(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  // Ticket Details Button
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.expand_more,
+                                      color: Colors.black,
+                                    ),
+                                    onPressed: () {
+                                      viewModel.showTicketDetailsSheet(context);
+                                    },
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                          const Divider(height: 24),
-                          // Flight Delay Insurance
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Checkbox(
-                                value: viewModel.flightDelayInsurance,
-                                onChanged: (value) =>
-                                    viewModel.toggleFlightDelayInsurance(value!),
-                                activeColor: AppColors.primaryColor,
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                visualDensity: VisualDensity.compact,
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Flight Delay Insurance',
-                                  style: AppTextStyle.paragraph2.copyWith(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                            const SizedBox(height: 16),
+                            // Additional Services Section
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'Additional Services',
+                                style: AppTextStyle.body3.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF474747),
                                 ),
                               ),
-                            ],
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.only(left: 32, bottom: 8),
-                            child: Text(
-                              '• Receive immediately 500,000 VND / person / trip for flights delayed over 2 consecutive hours.',
-                              style: TextStyle(fontSize: 12, color: Colors.black87),
                             ),
-                          ),
-                          IntrinsicWidth(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE64F03).withOpacity(0.16),
-                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
                               ),
-                              child: const Text(
-                                '35,000 VND / passenger / trip',
-                                style: TextStyle(fontSize: 14, color: Colors.black87),
+                              child: Consumer<AdditionalServicesViewModel>(
+                                builder: (context, viewModel, child) {
+                                  return Column(
+                                    children: [
+                                      // Checked Baggage
+                                      ListTile(
+                                        leading: SvgPicture.asset(
+                                          'assets/icons/lucide_baggage-claim.svg',
+                                          width: 24,
+                                          height: 24,
+                                          colorFilter: const ColorFilter.mode(
+                                            Colors.black,
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                        title: const Text(
+                                          'Checked Baggage',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        trailing: viewModel.additionalServices.any((service) => service.baggageCost > 0)
+                                            ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '${viewModel.formatCurrency(
+                                                viewModel.additionalServices.fold(
+                                                  0,
+                                                      (sum, service) => sum + service.baggageCost,
+                                                ),
+                                              )} vnd',
+                                              style: AppTextStyle.caption1.copyWith(
+                                                fontSize: 14,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            SvgPicture.asset(
+                                              'assets/icons/arrow_right.svg',
+                                              width: 16,
+                                              height: 16,
+                                              colorFilter: const ColorFilter.mode(
+                                                Colors.black,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                            : SvgPicture.asset(
+                                          'assets/icons/tabler_plus.svg',
+                                          width: 24,
+                                          height: 24,
+                                        ),
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => CheckedBaggageScreen(
+                                                flightData: flightData,
+                                                routerTrip:
+                                                '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
+                                                airlineInfo: viewModel.airlineInfo,
+                                                passengerInfoViewModel: passengerInfoViewModel,
+                                                additionalServicesViewModel: viewModel,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      // Seat Selection
+                                      ListTile(
+                                        leading: SvgPicture.asset(
+                                          'assets/icons/hugeicons_seat-selector.svg',
+                                          width: 24,
+                                          height: 24,
+                                          colorFilter: const ColorFilter.mode(
+                                            Colors.black,
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                        title: const Text(
+                                          'Seat Selection',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        trailing: viewModel.additionalServices.any((service) => service.seatCost > 0)
+                                            ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '${viewModel.formatCurrency(
+                                                viewModel.additionalServices.fold(
+                                                  0,
+                                                      (sum, service) => sum + service.seatCost,
+                                                ),
+                                              )} vnd',
+                                              style: AppTextStyle.caption1.copyWith(
+                                                fontSize: 14,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            SvgPicture.asset(
+                                              'assets/icons/arrow_right.svg',
+                                              width: 16,
+                                              height: 16,
+                                              colorFilter: const ColorFilter.mode(
+                                                Colors.black,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                            : SvgPicture.asset(
+                                          'assets/icons/tabler_plus.svg',
+                                          width: 24,
+                                          height: 24,
+                                        ),
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => SeatSelectionScreen(
+                                                flightData: flightData,
+                                                airlineInfo: viewModel.airlineInfo,
+                                                passengerInfoViewModel: passengerInfoViewModel,
+                                                additionalServicesViewModel: viewModel,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                      // Meal
+                                      ListTile(
+                                        leading: SvgPicture.asset(
+                                          'assets/icons/silverware-fork-knife.svg',
+                                          width: 24,
+                                          height: 24,
+                                          colorFilter: const ColorFilter.mode(
+                                            Colors.black,
+                                            BlendMode.srcIn,
+                                          ),
+                                        ),
+                                        title: const Text(
+                                          'Meal',
+                                          style: TextStyle(fontSize: 16),
+                                        ),
+                                        trailing: viewModel.additionalServices.any((service) => service.mealCost > 0)
+                                            ? Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(
+                                              '${viewModel.formatCurrency(
+                                                viewModel.additionalServices.fold(
+                                                  0,
+                                                      (sum, service) => sum + service.mealCost,
+                                                ),
+                                              )} vnd',
+                                              style: AppTextStyle.caption1.copyWith(
+                                                fontSize: 14,
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            const SizedBox(width: 4),
+                                            SvgPicture.asset(
+                                              'assets/icons/arrow_right.svg',
+                                              width: 16,
+                                              height: 16,
+                                              colorFilter: const ColorFilter.mode(
+                                                Colors.black,
+                                                BlendMode.srcIn,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                            : SvgPicture.asset(
+                                          'assets/icons/tabler_plus.svg',
+                                          width: 24,
+                                          height: 24,
+                                        ),
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => OrderMealScreen(
+                                                flightData: flightData,
+                                                routerTrip:
+                                                '$departureAirportCity (${flightData.departureAirport}) - $arrivalAirportCity (${flightData.arrivalAirport})',
+                                                airlineInfo: viewModel.airlineInfo,
+                                                passengerInfoViewModel: passengerInfoViewModel,
+                                                additionalServicesViewModel: viewModel,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  );
+                                },
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            // Insurance Services Section
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Text(
+                                'Insurance Services',
+                                style: AppTextStyle.body3.copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF474747),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              margin: const EdgeInsets.symmetric(horizontal: 16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // Comprehensive Travel Insurance
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Checkbox(
+                                        value: viewModel.comprehensiveInsurance,
+                                        onChanged: (value) =>
+                                            viewModel.toggleComprehensiveInsurance(value!),
+                                        activeColor: AppColors.primaryColor,
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Comprehensive Travel Insurance',
+                                          style: AppTextStyle.paragraph2.copyWith(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 32, bottom: 8),
+                                    child: Text(
+                                      '• Receive immediately 888,000 VND / person / trip for flights delayed over consecutive hours.\n'
+                                          '• Protection against accident risks, lost luggage, property, compensation up to 200,000,000 VND.',
+                                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                                    ),
+                                  ),
+                                  IntrinsicWidth(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE64F03).withOpacity(0.16),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        '35,000 VND / passenger / trip',
+                                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                                      ),
+                                    ),
+                                  ),
+                                  const Divider(height: 24),
+                                  // Flight Delay Insurance
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                      Checkbox(
+                                        value: viewModel.flightDelayInsurance,
+                                        onChanged: (value) =>
+                                            viewModel.toggleFlightDelayInsurance(value!),
+                                        activeColor: AppColors.primaryColor,
+                                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Flight Delay Insurance',
+                                          style: AppTextStyle.paragraph2.copyWith(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const Padding(
+                                    padding: EdgeInsets.only(left: 32, bottom: 8),
+                                    child: Text(
+                                      '• Receive immediately 500,000 VND / person / trip for flights delayed over 2 consecutive hours.',
+                                      style: TextStyle(fontSize: 12, color: Colors.black87),
+                                    ),
+                                  ),
+                                  IntrinsicWidth(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFE64F03).withOpacity(0.16),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Text(
+                                        '35,000 VND / passenger / trip',
+                                        style: TextStyle(fontSize: 14, color: Colors.black87),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 15,),
+                // Fixed bottom container for Total and Continue
+                Container(
+                  width: double.infinity, // Ensure full-width
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, -2),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Total Amount Section
-                    Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(8),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black26,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Column(
+                    ],
+                  ),
+                  child: Consumer<AdditionalServicesViewModel>(
+                    builder: (context, viewModel, child) {
+                      return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           ExpansionTile(
@@ -464,6 +580,32 @@ class AdditionalServicesScreen extends StatelessWidget {
                               ],
                             ),
                             children: [
+                              // Checked Baggage
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                child: Consumer<PassengerInfoViewModel>(
+                                  builder: (context, passengerViewModel, child) {
+                                    if (passengerViewModel.passengers.isEmpty) {
+                                      return const Text(
+                                        'Không có hành khách nào.',
+                                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                                      );
+                                    }
+                                    final service = viewModel.additionalServices[0];
+                                    return Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Checked Baggage ${service.baggagePackage ?? 'None'} - ${viewModel.formatCurrency(service.baggageCost)} VND',
+                                        style: AppTextStyle.caption2.copyWith(
+                                          fontSize: 12,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                              // Other Services (Meal, Seat)
                               Consumer<PassengerInfoViewModel>(
                                 builder: (context, passengerViewModel, child) {
                                   return ListView.builder(
@@ -482,13 +624,6 @@ class AdditionalServicesScreen extends StatelessWidget {
                                               style: AppTextStyle.paragraph2.copyWith(
                                                 fontSize: 14,
                                                 fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            Text(
-                                              'Baggage: ${service.baggagePackage ?? 'None'} - ${viewModel.formatCurrency(service.baggageCost)} VND',
-                                              style: AppTextStyle.caption2.copyWith(
-                                                fontSize: 12,
-                                                color: Colors.black54,
                                               ),
                                             ),
                                             const SizedBox(height: 4),
@@ -540,13 +675,12 @@ class AdditionalServicesScreen extends StatelessWidget {
                             ),
                           ),
                         ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+                      );
+                    },
+                  ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
         ),
       ),

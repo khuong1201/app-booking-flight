@@ -5,7 +5,9 @@ import 'package:booking_flight/presentation/viewmodel/home/Detail_flight_tickets
 import 'package:booking_flight/data/SearchViewModel.dart';
 import 'package:booking_flight/presentation/viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'dart:convert';
+
+import 'package:provider/provider.dart'; // Thêm import để sử dụng jsonEncode
 
 class AdditionalServicesViewModel extends ChangeNotifier {
   bool _comprehensiveInsurance = true;
@@ -65,6 +67,7 @@ class AdditionalServicesViewModel extends ChangeNotifier {
           'Initialized AdditionalServicesData: ${service.passengerName}, ${service.passengerType}, Age: ${service.passengerAge}');
       return service;
     }).toList();
+    notifyListeners();
   }
 
   void updateBaggage(int index, String? baggage, double cost) {
@@ -84,6 +87,18 @@ class AdditionalServicesViewModel extends ChangeNotifier {
       debugPrint('Error: Invalid index $index for additional services');
     }
   }
+
+  void updateSeatSelection(int index, String? seat, double cost) {
+    if (index >= 0 && index < _additionalServices.length) {
+      debugPrint('Updating seat for passenger $index: $seat, cost: $cost');
+      _additionalServices[index].updateSeat(seat, cost);
+      _updateTotal();
+      notifyListeners();
+    } else {
+      debugPrint('Error: Invalid index $index for seat selection');
+    }
+  }
+
   void toggleComprehensiveInsurance(bool value) {
     _comprehensiveInsurance = value;
     _updateTotal();
@@ -119,7 +134,14 @@ class AdditionalServicesViewModel extends ChangeNotifier {
   }
 
   void continueAction(BuildContext context) {
+    // Chuyển đổi danh sách _additionalServices sang JSON
+    final additionalServicesJson = _additionalServices.map((service) => service.toJson()).toList();
+
+    // In dữ liệu JSON đã lưu
     debugPrint("Continue pressed with total: $_totalAmount VND");
+    debugPrint("Additional Services Data (JSON):");
+    debugPrint(const JsonEncoder.withIndent('  ').convert(additionalServicesJson));
+
     // TODO: Navigate to the next screen (e.g., PaymentScreen)
   }
 
@@ -144,21 +166,21 @@ class AdditionalServicesViewModel extends ChangeNotifier {
             decoration: const BoxDecoration(color: Colors.white),
             height: MediaQuery.of(context).size.height * 0.9,
             child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Consumer<DetailFlightTicketsViewModel>(
-                      builder: (context, viewModel, _) => TicketDetailsView(
-                        viewModel: viewModel,
-                        onClose: () => Navigator.pop(context),
-                      ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Consumer<DetailFlightTicketsViewModel>(
+                    builder: (context, viewModel, _) => TicketDetailsView(
+                      viewModel: viewModel,
+                      onClose: () => Navigator.pop(context),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
           ),
         );
       },

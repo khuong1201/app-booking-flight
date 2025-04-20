@@ -39,13 +39,13 @@ class AdditionalServicesData {
   }
 
   // Cập nhật bữa ăn
-  void updateMeal(String? meal, double cost, int quantity) { // Thêm quantity
+  void updateMeal(String? meal, double cost, int quantity) {
     this.meal = meal;
     mealCost = cost;
     mealQuantity = quantity; // Lưu số lượng món ăn
   }
 
-  // Chuyển đổi sang JSON nếu cần
+  // Chuyển đổi sang JSON
   Map<String, dynamic> toJson() {
     return {
       'passengerName': passengerName,
@@ -57,7 +57,7 @@ class AdditionalServicesData {
       'seatCost': seatCost,
       'meal': meal,
       'mealCost': mealCost,
-      'mealQuantity': mealQuantity, // Thêm vào JSON
+      'mealQuantity': mealQuantity,
     };
   }
 }
