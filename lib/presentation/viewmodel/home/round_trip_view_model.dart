@@ -33,6 +33,7 @@ class RoundTripFormViewModel extends ChangeNotifier implements SearchViewModel {
   @override
   int get passengerInfants => _passengerInfants;
 
+  @override
   String get seatClass => _seatClass;
 
   // ------------------ Update Methods ------------------

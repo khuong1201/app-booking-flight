@@ -1,7 +1,7 @@
 import 'package:booking_flight/core/constants/constants.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../data/seat_class_data.dart';
+import '../../../data/seat_class_model.dart';
 import '../../viewmodel/search_viewmodel/search_seat_view_model.dart';
 
 

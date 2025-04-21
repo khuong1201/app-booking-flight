@@ -12,6 +12,13 @@ class ContactInfo {
   String? get email => _email;
   set email(String? value) => _email = value;
 
+  factory ContactInfo.fromJson(Map<String, dynamic> json) {
+    return ContactInfo(
+      phoneNumber: json['phoneNumber'] as String?,
+      email: json['email'] as String?,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'phoneNumber': _phoneNumber,
@@ -30,10 +37,11 @@ class Passenger {
   String? lastName;
   String? gender;
   DateTime? dateOfBirth;
-  final String type; // 'adult', 'child', 'infant'
+  final String type;
   String? _idNumber;
   String? _documentType;
   String? _documentNumber;
+  ContactInfo? contactInfo;
 
   Passenger({
     this.firstName,
@@ -44,6 +52,7 @@ class Passenger {
     required this.type,
     String? documentType,
     String? documentNumber,
+    this.contactInfo,
   })  : _idNumber = idNumber,
         _documentType = documentType ?? 'ID Card',
         _documentNumber = documentNumber;
@@ -68,6 +77,24 @@ class Passenger {
     }
   }
 
+  factory Passenger.fromJson(Map<String, dynamic> json) {
+    return Passenger(
+      firstName: json['firstName'] as String?,
+      lastName: json['lastName'] as String?,
+      gender: json['gender'] as String?,
+      dateOfBirth: json['dateOfBirth'] != null
+          ? DateTime.parse(json['dateOfBirth'] as String)
+          : null,
+      type: json['type'] as String,
+      idNumber: json['idNumber'] as String?,
+      documentType: json['documentType'] as String?,
+      documentNumber: json['documentNumber'] as String?,
+      contactInfo: json['contactInfo'] != null
+          ? ContactInfo.fromJson(json['contactInfo'] as Map<String, dynamic>)
+          : null,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'firstName': firstName,
@@ -78,11 +105,12 @@ class Passenger {
       'idNumber': _idNumber,
       'documentType': _documentType,
       'documentNumber': _documentNumber,
+      'contactInfo': contactInfo?.toJson(),
     };
   }
 
   @override
   String toString() {
-    return 'Passenger: $firstName $lastName, gender=$gender, type=$type, documentType=$_documentType, idNumber=${_maskId(_idNumber)}';
+    return 'Passenger: $firstName $lastName, gender=$gender, type=$type, documentType=$_documentType, idNumber=${_maskId(_idNumber)}, contact=$contactInfo';
   }
 }

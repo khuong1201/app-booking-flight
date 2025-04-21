@@ -1,11 +1,12 @@
+import 'package:booking_flight/core/utils/caculator_price_total_passenger.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../../data/search_flight_data.dart';
-import '../../../data/SearchViewModel.dart';
 
 class DetailFlightTicketsViewModel extends ChangeNotifier {
   final FlightData? flightData;
-  final SearchViewModel? searchViewModel;
+  final dynamic searchViewModel;
+  final PriceCalculator _pricingService = PriceCalculator(); // Thêm PriceCalculator
 
   DetailFlightTicketsViewModel({
     required this.flightData,
@@ -21,7 +22,7 @@ class DetailFlightTicketsViewModel extends ChangeNotifier {
 
   String get airlineName => flightData?.airlineName ?? 'Unknown';
   String get airlineLogo => flightData?.airlineLogo ?? '';
-  String get flightCode => flightData?.flightCode ?? 'N/A'; // Giả định flightCode có thể không tồn tại
+  String get flightCode => flightData?.flightCode ?? 'N/A';
 
   String get departureAirport => _extractCode(searchViewModel?.departureAirport) ?? flightData?.departureAirport ?? 'Unknown';
   String get departureTime => flightData?.departureTime ?? 'N/A';
@@ -69,38 +70,31 @@ class DetailFlightTicketsViewModel extends ChangeNotifier {
   String get passengerNameChange => 'Not applicable / Not permitted';
 
   // --- Price Calculations ---
-  double get _baseFareNumeric => _parsePrice(flightData?.price ?? '');
+  String get totalPrice => _pricingService.calculateTotalPrice(
+    basePrice: flightData?.price ?? '',
+    adults: passengerAdults,
+    children: passengerChilds,
+    infants: passengerInfants,
+  );
 
-  final currencyFormatter = NumberFormat.currency(locale: 'vi_VN', symbol: '', decimalDigits: 0);
+  String get price => flightData?.price ?? 'N/A';
 
   String get adultFareString {
-    if (_baseFareNumeric == 0.0) return 'N/A';
-    return '${currencyFormatter.format(_baseFareNumeric)} VND';
+    final baseFareNumeric = _pricingService.getBaseFareNumeric(flightData?.price ?? '');
+    if (baseFareNumeric == 0.0) return 'N/A';
+    return '${PriceCalculator.currencyFormatter.format(baseFareNumeric)} VND';
   }
 
   String get childFareString {
-    if (_baseFareNumeric == 0.0) return 'N/A';
-    return '${currencyFormatter.format(_baseFareNumeric * 0.75)} VND';
+    final baseFareNumeric = _pricingService.getBaseFareNumeric(flightData?.price ?? '');
+    if (baseFareNumeric == 0.0) return 'N/A';
+    return '${PriceCalculator.currencyFormatter.format(baseFareNumeric * 0.75)} VND';
   }
 
   String get infantFareString {
-    if (_baseFareNumeric == 0.0) return 'N/A';
-    return '${currencyFormatter.format(_baseFareNumeric * 0.10)} VND';
-  }
-
-  double calculateTotalAmount() {
-    final adults = passengerAdults;
-    final children = passengerChilds;
-    final infants = passengerInfants;
-    final adultAmount = _baseFareNumeric * adults;
-    final childAmount = (_baseFareNumeric * 0.75) * children;
-    final infantAmount = (_baseFareNumeric * 0.10) * infants;
-    return adultAmount + childAmount + infantAmount;
-  }
-
-  String get totalAmountString {
-    final total = calculateTotalAmount();
-    return total > 0 ? '${currencyFormatter.format(total)} VND' : 'N/A';
+    final baseFareNumeric = _pricingService.getBaseFareNumeric(flightData?.price ?? '');
+    if (baseFareNumeric == 0.0) return 'N/A';
+    return '${PriceCalculator.currencyFormatter.format(baseFareNumeric * 0.10)} VND';
   }
 
   // --- Passenger Information ---
@@ -111,24 +105,5 @@ class DetailFlightTicketsViewModel extends ChangeNotifier {
   // --- Utility Methods ---
   String? _extractCode(Map<String, dynamic>? airport) {
     return airport?['code'];
-  }
-
-  static double _parsePrice(String price) {
-    try {
-      // Loại bỏ đơn vị tiền tệ và khoảng trắng
-      String cleanedPrice = price.replaceAll('VND', '').trim();
-
-      // Thay dấu chấm (phân cách hàng nghìn) thành rỗng
-      cleanedPrice = cleanedPrice.replaceAll('.', '');
-
-      // Thay dấu phẩy (phân cách thập phân) thành dấu chấm
-      cleanedPrice = cleanedPrice.replaceAll(',', '.');
-
-      // Phân tích thành double
-      return double.parse(cleanedPrice);
-    } catch (e) {
-      debugPrint('Lỗi phân tích giá: $e với đầu vào: $price');
-      return 0.0; // Giữ nguyên 0.0 như mã gốc
-    }
   }
 }

@@ -1,3 +1,5 @@
+import 'package:booking_flight/presentation/viewmodel/home/one_way_view_model.dart';
+import 'package:booking_flight/presentation/viewmodel/home/round_trip_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
@@ -116,7 +118,7 @@ class FlightTicketCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    viewModel.price,
+                    viewModel.totalPrice,
                     style: AppTextStyle.body3.copyWith(color: AppColors.secondaryColor),
                   ),
                   Text(
@@ -198,7 +200,7 @@ class _FlightTicketScreenState extends State<FlightTicketScreen> {
   late List<FlightTicketViewModel> filteredList;
   FlightTicketViewModel? cheapestFlight;
   bool isLoading = true;
-  int _tabIndex = 0;
+  final int _tabIndex = 0;
 
   @override
   void initState() {

@@ -13,13 +13,14 @@ class CustomBottomNavigationBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('CustomBottomNavigationBar rebuild với currentIndex: $currentIndex');
     return BottomNavigationBar(
       currentIndex: currentIndex,
       onTap: onTap,
       type: BottomNavigationBarType.fixed,
       selectedItemColor: AppColors.primaryColor,
       unselectedItemColor: AppColors.neutralColor,
-      backgroundColor: Color(0xFFE3E8F7),
+      backgroundColor: const Color(0xFFE3E8F7),
       elevation: 0,
       items: const [
         BottomNavigationBarItem(
@@ -36,7 +37,7 @@ class CustomBottomNavigationBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: ImageIcon(AssetImage('assets/icons/Profile.png')),
-          label: 'Profile',
+          label: 'Profile', // Sửa 'Profiles' thành 'Profile'
         ),
       ],
     );

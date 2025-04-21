@@ -33,7 +33,7 @@ class CustomTabBar extends StatelessWidget {
   Widget buildTab(String title, int index) {
     return Expanded(
       child: GestureDetector(
-        onTap: () => onTap(index), // Gọi callback khi bấm
+        onTap: () => onTap(index),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(

@@ -6,7 +6,7 @@ import 'dart:convert';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/text_styles.dart';
 import '../../../data/passenger_infor_model.dart';
-import '../../viewmodel/home/Detail_flight_tickets_view_model.dart';
+import '../../viewmodel/home/detail_flight_tickets_view_model.dart';
 import '../../viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
 import '../purcharse_services_view/addition_services_view.dart';
 import '../../../data/search_flight_data.dart';
@@ -315,7 +315,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Text(
-            detailVM.totalAmountString,
+            detailVM.totalPrice,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ],
@@ -348,7 +348,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                         Text(detailVM.routeTitle),
                       ],
                     ),
-                    Text(detailVM.totalAmountString),
+                    Text(detailVM.totalPrice),
                   ],
                 ),
               ),
@@ -366,7 +366,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Ticket price'),
-                    Text(detailVM.totalAmountString),
+                    Text(detailVM.totalPrice),
                   ],
                 ),
               ),

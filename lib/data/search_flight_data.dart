@@ -1,4 +1,4 @@
-import 'airport_data.dart';
+import 'package:booking_flight/data/airport_data.dart';
 
 class FlightData {
   final String airlineName;
@@ -34,7 +34,67 @@ class FlightData {
     this.returnDepartureTime,
     this.returnArrivalTime,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'airlineName': airlineName,
+      'airlineLogo': airlineLogo,
+      'departureTime': departureTime,
+      'arrivalTime': arrivalTime,
+      'departureDate': departureDate,
+      'arrivalDate': arrivalDate,
+      'duration': duration,
+      'price': price,
+      'flightCode': flightCode,
+      'departureAirport': departureAirport,
+      'arrivalAirport': arrivalAirport,
+      'passengerCount': passengerCount,
+      'returnDate': returnDate,
+      'returnDepartureTime': returnDepartureTime,
+      'returnArrivalTime': returnArrivalTime,
+    };
+  }
+
+  factory FlightData.fromJson(Map<String, dynamic> json) {
+    const requiredFields = [
+      'airlineName',
+      'airlineLogo',
+      'departureTime',
+      'arrivalTime',
+      'departureDate',
+      'arrivalDate',
+      'duration',
+      'price',
+      'flightCode',
+      'departureAirport',
+      'arrivalAirport',
+      'passengerCount'
+    ];
+    for (var field in requiredFields) {
+      if (json[field] == null) {
+        throw FormatException('Missing required field: $field');
+      }
+    }
+    return FlightData(
+      airlineName: json['airlineName'].toString(),
+      airlineLogo: json['airlineLogo'].toString(),
+      departureTime: json['departureTime'].toString(),
+      arrivalTime: json['arrivalTime'].toString(),
+      departureDate: json['departureDate'].toString(),
+      arrivalDate: json['arrivalDate'].toString(),
+      duration: json['duration'].toString(),
+      price: json['price'].toString(),
+      flightCode: json['flightCode'].toString(),
+      departureAirport: json['departureAirport'].toString(),
+      arrivalAirport: json['arrivalAirport'].toString(),
+      passengerCount: json['passengerCount'].toString(),
+      returnDate: json['returnDate']?.toString(),
+      returnDepartureTime: json['returnDepartureTime']?.toString(),
+      returnArrivalTime: json['returnArrivalTime']?.toString(),
+    );
+  }
 }
+
 String getAirportName(String airportCode) {
   final airport = airports.firstWhere(
         (airport) => airport['code'] == airportCode,
@@ -42,6 +102,7 @@ String getAirportName(String airportCode) {
   );
   return airport['name']!;
 }
+
 String getAirportCity(String airportCode) {
   final airport = airports.firstWhere(
         (airport) => airport['code'] == airportCode,
@@ -49,6 +110,7 @@ String getAirportCity(String airportCode) {
   );
   return airport['city']!;
 }
+
 // Lấy danh sách sân bay theo loại
 List<Map<String, String>> getAirportsByType(String type) {
   return airports.where((airport) => airport['type'] == type).toList();
@@ -58,6 +120,7 @@ List<Map<String, String>> getAirportsByType(String type) {
 List<Map<String, String>> getAirportsByCity(String city) {
   return airports.where((airport) => airport['city'] == city).toList();
 }
+
 // Danh sách chuyến bay mở rộng từ 22/04 đến 30/04
 final List<FlightData> flightDataList = [
   // --- Existing flights ---
@@ -187,4 +250,3 @@ final List<FlightData> flightDataList = [
     passengerCount: '1 passenger',
   ),
 ];
-

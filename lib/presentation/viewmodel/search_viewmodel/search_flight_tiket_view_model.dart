@@ -1,4 +1,5 @@
-import 'package:booking_flight/presentation/viewmodel/home/Detail_flight_tickets_view_model.dart';
+import 'package:booking_flight/core/utils/caculator_price_total_passenger.dart';
+import 'package:booking_flight/presentation/viewmodel/home/detail_flight_tickets_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ class FlightTicketViewModel extends ChangeNotifier {
   FlightData? _flightData;
   final SearchViewModel? searchViewModel;
   int _searchOptionsTabIndex = 0;
+  final PriceCalculator _pricingService = PriceCalculator(); // Khởi tạo PriceCalculator
 
   FlightTicketViewModel({
     required FlightData? flightData,
@@ -24,7 +26,7 @@ class FlightTicketViewModel extends ChangeNotifier {
   String get arrivalTime => _flightData?.arrivalTime ?? '';
   String get arrivalAirport => _flightData?.arrivalAirport ?? '';
   String get duration => _flightData?.duration ?? '';
-  String get price => _flightData?.price ?? '';
+  String get basePrice => _flightData?.price ?? '';
   String get departureDate => _flightData?.departureDate ?? '';
   String? get returnDate => _flightData?.returnDate;
   String? get returnDepartureTime => _flightData?.returnDepartureTime;
@@ -40,6 +42,22 @@ class FlightTicketViewModel extends ChangeNotifier {
     final total = passengerAdults + passengerChilds + passengerInfants;
     return '$total Pax';
   }
+
+  // --- Total Price Calculation ---
+  String get totalPrice => _pricingService.calculateTotalPrice(
+    basePrice: _flightData?.price ?? '',
+    adults: passengerAdults,
+    children: passengerChilds,
+    infants: passengerInfants,
+  );
+
+  // Thêm phương thức calculateTotalAmount để hỗ trợ findCheapestFlight
+  double calculateTotalAmount() => _pricingService.calculateTotalAmount(
+    basePrice: _flightData?.price ?? '',
+    adults: passengerAdults,
+    children: passengerChilds,
+    infants: passengerInfants,
+  );
 
   // --- Search Criteria Display ---
   String get searchDepartureDate {
@@ -84,20 +102,13 @@ class FlightTicketViewModel extends ChangeNotifier {
   // --- Utility Methods ---
   static double _parsePrice(String price) {
     try {
-      // Loại bỏ đơn vị tiền tệ và khoảng trắng
       String cleanedPrice = price.replaceAll('VND', '').trim();
-
-      // Thay dấu chấm (phân cách hàng nghìn) thành rỗng
       cleanedPrice = cleanedPrice.replaceAll('.', '');
-
-      // Thay dấu phẩy (phân cách thập phân) thành dấu chấm
       cleanedPrice = cleanedPrice.replaceAll(',', '.');
-
-      // Phân tích thành double
       return double.parse(cleanedPrice);
     } catch (e) {
       debugPrint('Lỗi phân tích giá: $e với đầu vào: $price');
-      return double.infinity;
+      return 0.0;
     }
   }
 
@@ -111,9 +122,7 @@ class FlightTicketViewModel extends ChangeNotifier {
 
   // --- Static Methods for Data Handling ---
   static List<FlightTicketViewModel> fetchAllData(
-      List<FlightData> flightDataList,
-      SearchViewModel? searchViewModel,
-      ) {
+      List<FlightData> flightDataList, SearchViewModel? searchViewModel) {
     return flightDataList
         .map((data) => FlightTicketViewModel(
       flightData: data,
@@ -183,7 +192,6 @@ class FlightTicketViewModel extends ChangeNotifier {
             flightReturnDate.day == filterReturnDate.day;
       }
 
-      // For one-way searches, only include flights with no returnDate
       bool isValidForOneWay = !isRoundTrip ? flight.returnDate == null : true;
 
       return matchesDeparture &&
@@ -203,8 +211,8 @@ class FlightTicketViewModel extends ChangeNotifier {
     if (flights.isEmpty) return null;
 
     return flights.reduce((a, b) {
-      final priceA = _parsePrice(a.price);
-      final priceB = _parsePrice(b.price);
+      final priceA = a.calculateTotalAmount();
+      final priceB = b.calculateTotalAmount();
       return priceA <= priceB ? a : b;
     });
   }

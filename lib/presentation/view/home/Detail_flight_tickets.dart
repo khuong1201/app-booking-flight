@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:booking_flight/core/constants/constants.dart';
-import 'package:booking_flight/presentation/viewmodel/home/Detail_flight_tickets_view_model.dart';
+import 'package:booking_flight/presentation/viewmodel/home/detail_flight_tickets_view_model.dart';
 import 'package:booking_flight/presentation/view/search_view/passenger_information_view.dart';
 
 class TicketDetailsView extends StatelessWidget {
@@ -35,246 +35,257 @@ class TicketDetailsView extends StatelessWidget {
             ),
           ],
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                color: const Color(0xFFE3E8F7),
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      viewModel.routeTitle,
-                      style: AppTextStyle.heading3.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primaryColor,
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
+        body: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    color: const Color(0xFFE3E8F7),
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          viewModel.routeTitle,
+                          style: AppTextStyle.heading3.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
                             children: [
-                              Image.asset(
-                                viewModel.airlineLogo,
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.contain,
-                                errorBuilder: (context, error, stackTrace) => const Icon(
-                                  Icons.airplane_ticket_outlined,
-                                  size: 40,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    viewModel.airlineName,
-                                    style: AppTextStyle.body3.copyWith(fontWeight: FontWeight.bold),
+                                  Image.asset(
+                                    viewModel.airlineLogo,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.contain,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.airplane_ticket_outlined,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    viewModel.flightCode,
-                                    style: AppTextStyle.paragraph1.copyWith(color: const Color(0xFF757575)),
+                                  const SizedBox(width: 12),
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        viewModel.airlineName,
+                                        style: AppTextStyle.body3.copyWith(fontWeight: FontWeight.bold),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        viewModel.flightCode,
+                                        style: AppTextStyle.paragraph1.copyWith(color: const Color(0xFF757575)),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          const Divider(color: Color(0xFFEEEEEE), thickness: 1),
-                          const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildFlightDetailColumn(
-                                viewModel.departureTime,
-                                viewModel.departureAirport,
-                                viewModel.departureDate,
-                                CrossAxisAlignment.start,
-                              ),
-                              _buildDurationColumn(
-                                viewModel.flightDuration,
-                                viewModel.flightType,
-                              ),
-                              _buildFlightDetailColumn(
-                                viewModel.arrivalTime,
-                                viewModel.arrivalAirport,
-                                viewModel.arrivalDate,
-                                CrossAxisAlignment.end,
-                              ),
-                            ],
-                          ),
-                          if (viewModel.flightType == "Round Trip") ...[
-                            const SizedBox(height: 12),
-                            const Divider(color: Color(0xFFEEEEEE), thickness: 1),
-                            const SizedBox(height: 12),
-                            Text(
-                              "Return Trip",
-                              style: AppTextStyle.body3.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  viewModel.returnDate,
-                                  style: AppTextStyle.caption1.copyWith(color: Colors.grey[600]),
-                                ),
-                                Text(
-                                  "Details provided at booking",
-                                  style: AppTextStyle.caption1.copyWith(
-                                    fontSize: 10,
-                                    color: const Color(0xFF9C9C9C),
+                              const SizedBox(height: 12),
+                              const Divider(color: Color(0xFFEEEEEE), thickness: 1),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildFlightDetailColumn(
+                                    viewModel.departureTime,
+                                    viewModel.departureAirport,
+                                    viewModel.departureDate,
+                                    CrossAxisAlignment.start,
                                   ),
+                                  _buildDurationColumn(
+                                    viewModel.flightDuration,
+                                    viewModel.flightType,
+                                  ),
+                                  _buildFlightDetailColumn(
+                                    viewModel.arrivalTime,
+                                    viewModel.arrivalAirport,
+                                    viewModel.arrivalDate,
+                                    CrossAxisAlignment.end,
+                                  ),
+                                ],
+                              ),
+                              if (viewModel.flightType == "Round Trip") ...[
+                                const SizedBox(height: 12),
+                                const Divider(color: Color(0xFFEEEEEE), thickness: 1),
+                                const SizedBox(height: 12),
+                                Text(
+                                  "Return Trip",
+                                  style: AppTextStyle.body3.copyWith(fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      viewModel.returnDate,
+                                      style: AppTextStyle.caption1.copyWith(color: Colors.grey[600]),
+                                    ),
+                                    Text(
+                                      "Details provided at booking",
+                                      style: AppTextStyle.caption1.copyWith(
+                                        fontSize: 10,
+                                        color: const Color(0xFF9C9C9C),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle("Baggage Information"),
-                    _buildInfoRow(
-                      "Checked Baggage:",
-                      viewModel.checkedBaggage,
-                      Image.asset('assets/icons/carry-on-bag.png', width: 24, height: 24),
-                    ),
-                    _buildInfoRow(
-                      "Carry-on Baggage:",
-                      viewModel.carryOnBaggage,
-                      Image.asset('assets/icons/Trip.png', width: 24, height: 24),
-                    ),
-                    const SizedBox(height: 16),
-                    _buildSectionTitle("Policies & Conditions"),
-                    buildExpandableSection(
-                      title: "Flight/Date/Itinerary Changes",
-                      content: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: DetailFlightTicketsViewModel.flightChanges
-                            .map((e) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4.0),
-                          child: Text(
-                            e,
-                            style: AppTextStyle.caption1.copyWith(color: Colors.black87),
-                          ),
-                        ))
-                            .toList(),
-                      ),
-                    ),
-                    buildExpandableSection(
-                      title: "Passenger Name Change",
-                      content: Text(
-                        viewModel.passengerNameChange,
-                        style: AppTextStyle.caption1.copyWith(color: Colors.black87),
-                      ),
-                    ),
-                    buildExpandableSection(
-                      title: "Ticket Upgrade",
-                      content: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: DetailFlightTicketsViewModel.ticketUpgrade
-                            .map((e) => Padding(
-                          padding: const EdgeInsets.only(bottom: 4.0),
-                          child: Text(
-                            e,
-                            style: AppTextStyle.caption1.copyWith(color: Colors.black87),
-                          ),
-                        ))
-                            .toList(),
-                      ),
-                    ),
-                    buildExpandableSection(
-                      title: "No-show & Cancellation",
-                      content: Text(
-                        viewModel.noShowPolicy,
-                        style: AppTextStyle.caption1.copyWith(color: Colors.black87),
-                      ),
-                    ),
-                    buildExpandableSection(
-                      title: "Refund & Credit Policy",
-                      content: Text(
-                        viewModel.refundPolicy,
-                        style: AppTextStyle.caption1.copyWith(color: Colors.black87),
-                      ),
-                    ),
-                    buildExpandableSection(
-                      title: "Fare Details",
-                      content: Card(
-                        elevation: 0,
-                        color: Colors.white,
-                        margin: EdgeInsets.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Total Passengers: ${viewModel.passengerAdults + viewModel.passengerChilds + viewModel.passengerInfants}",
-                                style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(height: 8),
-                              if (viewModel.passengerAdults > 0)
-                                _buildFareRow(
-                                  label: "${viewModel.passengerAdults} x Adult",
-                                  fare: viewModel.adultFareString,
-                                ),
-                              if (viewModel.passengerChilds > 0)
-                                _buildFareRow(
-                                  label: "${viewModel.passengerChilds} x Child",
-                                  fare: viewModel.childFareString,
-                                ),
-                              if (viewModel.passengerInfants > 0)
-                                _buildFareRow(
-                                  label: "${viewModel.passengerInfants} x Infant",
-                                  fare: viewModel.infantFareString,
-                                ),
                             ],
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildSectionTitle("Baggage Information"),
+                        _buildInfoRow(
+                          "Checked Baggage:",
+                          viewModel.checkedBaggage,
+                          Image.asset('assets/icons/carry-on-bag.png', width: 24, height: 24),
+                        ),
+                        _buildInfoRow(
+                          "Carry-on Baggage:",
+                          viewModel.carryOnBaggage,
+                          Image.asset('assets/icons/Trip.png', width: 24, height: 24),
+                        ),
+                        const SizedBox(height: 16),
+                        _buildSectionTitle("Policies & Conditions"),
+                        buildExpandableSection(
+                          title: "Flight/Date/Itinerary Changes",
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: DetailFlightTicketsViewModel.flightChanges
+                                .map((e) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: Text(
+                                e,
+                                style: AppTextStyle.caption1.copyWith(color: Colors.black87),
+                              ),
+                            ))
+                                .toList(),
+                          ),
+                        ),
+                        buildExpandableSection(
+                          title: "Passenger Name Change",
+                          content: Text(
+                            viewModel.passengerNameChange,
+                            style: AppTextStyle.caption1.copyWith(color: Colors.black87),
+                          ),
+                        ),
+                        buildExpandableSection(
+                          title: "Ticket Upgrade",
+                          content: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: DetailFlightTicketsViewModel.ticketUpgrade
+                                .map((e) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: Text(
+                                e,
+                                style: AppTextStyle.caption1.copyWith(color: Colors.black87),
+                              ),
+                            ))
+                                .toList(),
+                          ),
+                        ),
+                        buildExpandableSection(
+                          title: "No-show & Cancellation",
+                          content: Text(
+                            viewModel.noShowPolicy,
+                            style: AppTextStyle.caption1.copyWith(color: Colors.black87),
+                          ),
+                        ),
+                        buildExpandableSection(
+                          title: "Refund & Credit Policy",
+                          content: Text(
+                            viewModel.refundPolicy,
+                            style: AppTextStyle.caption1.copyWith(color: Colors.black87),
+                          ),
+                        ),
+                        buildExpandableSection(
+                          title: "Fare Details",
+                          content: Card(
+                            elevation: 0,
+                            color: Colors.white,
+                            margin: EdgeInsets.zero,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Total Passengers: ${viewModel.passengerAdults + viewModel.passengerChilds + viewModel.passengerInfants}",
+                                    style: AppTextStyle.paragraph1.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  if (viewModel.passengerAdults > 0)
+                                    _buildFareRow(
+                                      label: "${viewModel.passengerAdults} x Adult",
+                                      fare: viewModel.adultFareString,
+                                    ),
+                                  if (viewModel.passengerChilds > 0)
+                                    _buildFareRow(
+                                      label: "${viewModel.passengerChilds} x Child",
+                                      fare: viewModel.childFareString,
+                                    ),
+                                  if (viewModel.passengerInfants > 0)
+                                    _buildFareRow(
+                                      label: "${viewModel.passengerInfants} x Infant",
+                                      fare: viewModel.infantFareString,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Add padding to prevent content from being hidden behind the fixed bottom bar
+                  const SizedBox(height: 100),
+                ],
               ),
-              Padding(
+            ),
+            // Fixed bottom bar for Total Amount and Select Flight button
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Container(
+                color: Colors.white,
                 padding: const EdgeInsets.only(top: 8, right: 24, left: 24, bottom: 16),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           "Total Amount",
                           style: AppTextStyle.paragraph2.copyWith(color: Colors.grey[600]),
                         ),
-                        const Spacer(),
                         Text(
-                          viewModel.totalAmountString,
+                          viewModel.totalPrice,
                           style: AppTextStyle.body3.copyWith(
                             color: AppColors.primaryColor,
                             fontWeight: FontWeight.bold,
@@ -282,7 +293,7 @@ class TicketDetailsView extends StatelessWidget {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
                     ElevatedButton(
                       onPressed: viewModel.searchViewModel != null && viewModel.flightData != null
                           ? () {
@@ -291,8 +302,8 @@ class TicketDetailsView extends StatelessWidget {
                           MaterialPageRoute(
                             builder: (context) => PassengerInfoScreen(
                               detailViewModel: viewModel,
-                              searchViewModel: viewModel.searchViewModel!, // Fixed parameter name
-                              flightData: viewModel.flightData!, // Fixed parameter name
+                              searchViewModel: viewModel.searchViewModel!,
+                              flightData: viewModel.flightData!,
                             ),
                           ),
                         );
@@ -315,12 +326,13 @@ class TicketDetailsView extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+
   Widget buildExpandableSection({
     required String title,
     required Widget content,

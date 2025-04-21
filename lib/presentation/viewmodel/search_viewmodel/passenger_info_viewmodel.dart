@@ -1,9 +1,10 @@
 import 'package:booking_flight/core/constants/app_colors.dart';
+import 'package:booking_flight/core/utils/validator_utils.dart'; // Import ValidatorUtils
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../data/passenger_infor_model.dart';
-import '../home/Detail_flight_tickets_view_model.dart';
+import '../home/detail_flight_tickets_view_model.dart';
 
 class PassengerInfoViewModel extends ChangeNotifier {
   final int adultCount;
@@ -18,7 +19,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
   List<Passenger> get passengers => _passengers;
 
   String get flightRoute => detailViewModel.routeTitle;
-  String get totalAmount => detailViewModel.totalAmountString;
+  String get totalAmount => detailViewModel.totalPrice;
   String get flightCode => detailViewModel.flightCode;
   String get departureAirport => detailViewModel.departureAirport;
   String get arrivalAirport => detailViewModel.arrivalAirport;
@@ -42,14 +43,12 @@ class PassengerInfoViewModel extends ChangeNotifier {
 
   String? validateEmail(String? email) {
     if (email == null || email.isEmpty) return 'Email is required';
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegex.hasMatch(email) ? null : 'Invalid email format';
+    return ValidatorUtils.isValidEmail(email) ? null : 'Invalid email format';
   }
 
   String? validatePhoneNumber(String? phone) {
     if (phone == null || phone.isEmpty) return 'Phone number is required';
-    final phoneRegex = RegExp(r'^\+?\d{10,15}$');
-    return phoneRegex.hasMatch(phone) ? null : 'Invalid phone number';
+    return ValidatorUtils.isValidPhone(phone) ? null : 'Invalid phone number';
   }
 
   void updateContactInfo({String? phoneNumber, String? email}) {
@@ -85,7 +84,16 @@ class PassengerInfoViewModel extends ChangeNotifier {
       } else {
         passenger.documentType = 'ID Card';
       }
-      passenger.documentNumber = documentNumber?.isNotEmpty == true ? documentNumber : '';
+      if (documentNumber != null && documentNumber.isNotEmpty) {
+        if (ValidatorUtils.isValidIdCard(documentNumber, passenger.documentType!)) {
+          passenger.documentNumber = documentNumber;
+        } else {
+          passenger.documentNumber = '';
+          debugPrint('Invalid document number for passenger $index: $documentNumber');
+        }
+      } else {
+        passenger.documentNumber = '';
+      }
       debugPrint('Updated passenger $index: ${passenger.toString()}');
       notifyListeners();
     } else {
@@ -99,10 +107,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
     required Passenger passenger,
     required TextEditingController dobController,
   }) async {
-    // Lấy ngày sinh hiện tại hoặc mặc định là ngày hôm nay
     final initialDate = passenger.dateOfBirth ?? DateTime.now();
-
-    // Hiển thị DatePicker
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: initialDate,
@@ -125,7 +130,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
           ),
           child: MediaQuery(
             data: MediaQuery.of(context).copyWith(
-              textScaleFactor: 0.9,
+              textScaler: TextScaler.linear(0.9),
             ),
             child: child!,
           ),
@@ -133,16 +138,12 @@ class PassengerInfoViewModel extends ChangeNotifier {
       },
     );
 
-    // Nếu người dùng đã chọn ngày
     if (pickedDate != null) {
       final isValid = _validateDateForPassengerType(pickedDate, passenger.type);
-
       if (isValid) {
         final formattedDate = DateFormat('dd/MM/yyyy').format(pickedDate);
         dobController.text = formattedDate;
-
         updatePassenger(index: passengerIndex, dateOfBirth: pickedDate);
-
         debugPrint('Formatted DOB for passenger $passengerIndex: $formattedDate');
       } else {
         _showInvalidDateSnackbar(context, passenger.type);
@@ -150,11 +151,10 @@ class PassengerInfoViewModel extends ChangeNotifier {
     }
   }
 
-  /// Hiển thị thông báo nếu ngày không hợp lệ
   void _showInvalidDateSnackbar(BuildContext context, String passengerType) {
     final snackBar = SnackBar(
       content: Text(
-        'Ngày không hợp lệ cho hành khách loại $passengerType. Vui lòng chọn lại.',
+        'error $passengerType',
       ),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
@@ -184,6 +184,9 @@ class PassengerInfoViewModel extends ChangeNotifier {
     if (passenger.dateOfBirth == null) return 'Date of birth is required';
     if (passenger.documentNumber == null || passenger.documentNumber!.isEmpty) {
       return 'Document number is required';
+    }
+    if (!ValidatorUtils.isValidIdCard(passenger.documentNumber!, passenger.documentType!)) {
+      return 'Invalid ${passenger.documentType} number';
     }
     return null;
   }
@@ -267,7 +270,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
       }).toList(),
       'flightDetails': {
         'routeTitle': detailViewModel.routeTitle,
-        'totalAmount': detailViewModel.totalAmountString,
+        'totalAmount': detailViewModel.totalPrice,
         'flightCode': detailViewModel.flightCode,
         'departureAirport': detailViewModel.departureAirport,
         'arrivalAirport': detailViewModel.arrivalAirport,

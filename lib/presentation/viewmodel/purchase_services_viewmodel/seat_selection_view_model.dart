@@ -41,14 +41,23 @@ class SeatSelectionViewModel extends ChangeNotifier {
   int? get selectedPassenger => _selectedPassenger;
 
   String getSelectedSeatForPassenger(int passengerIndex) {
+    if (passengerIndex < 0 || passengerIndex >= additionalServicesViewModel.additionalServices.length) {
+      return 'None';
+    }
     return additionalServicesViewModel.additionalServices[passengerIndex].seatSelection ?? 'None';
   }
 
   double getSeatCostForPassenger(int passengerIndex) {
+    if (passengerIndex < 0 || passengerIndex >= additionalServicesViewModel.additionalServices.length) {
+      return 0.0;
+    }
     return additionalServicesViewModel.additionalServices[passengerIndex].seatCost;
   }
 
   bool isSeatAvailable(int row, int col) {
+    if (row < 1 || row > _seatAvailability.length || col < 0 || col >= _seatAvailability[0].length) {
+      return false;
+    }
     return _seatAvailability[row - 1][col];
   }
 
@@ -58,11 +67,17 @@ class SeatSelectionViewModel extends ChangeNotifier {
   }
 
   bool isSeatSelectedByCurrentPassenger(int row, int col, int passengerIndex) {
+    if (passengerIndex < 0 || passengerIndex >= additionalServicesViewModel.additionalServices.length) {
+      return false;
+    }
     final seatLabel = _getSeatLabel(row, col);
     return additionalServicesViewModel.additionalServices[passengerIndex].seatSelection == seatLabel;
   }
 
   bool isSeatSelectedByOtherPassenger(int row, int col, int passengerIndex) {
+    if (passengerIndex < 0 || passengerIndex >= additionalServicesViewModel.additionalServices.length) {
+      return false;
+    }
     final seatLabel = _getSeatLabel(row, col);
     for (int i = 0; i < additionalServicesViewModel.additionalServices.length; i++) {
       if (i != passengerIndex && additionalServicesViewModel.additionalServices[i].seatSelection == seatLabel) {
@@ -84,6 +99,10 @@ class SeatSelectionViewModel extends ChangeNotifier {
   }
 
   void togglePassengerSelection(int passengerIndex) {
+    if (passengerIndex < 0 || passengerIndex >= additionalServicesViewModel.additionalServices.length) {
+      debugPrint('Error: Invalid passengerIndex $passengerIndex');
+      return;
+    }
     _selectedPassenger = _selectedPassenger == passengerIndex ? null : passengerIndex;
     notifyListeners();
   }
@@ -113,7 +132,7 @@ class SeatSelectionViewModel extends ChangeNotifier {
   void _updateTotalSeatCost() {
     _totalSeatCost = additionalServicesViewModel.additionalServices.fold(
       0.0,
-          (sum, service) => sum + service.seatCost,
+          (sum, service) => sum + (service.seatCost ?? 0.0),
     );
   }
 
@@ -127,6 +146,9 @@ class SeatSelectionViewModel extends ChangeNotifier {
 
   String _getSeatLabel(int row, int col) {
     const columns = ['A', 'B', 'C', 'D', 'E', 'F'];
+    if (col < 0 || col >= columns.length) {
+      return '';
+    }
     return '$row${columns[col]}';
   }
 
@@ -145,7 +167,7 @@ class SeatSelectionViewModel extends ChangeNotifier {
   void confirmSelection(BuildContext context) {
     debugPrint('Confirming seat selection');
     additionalServicesViewModel.notifyListeners();
-    notifyListeners(); // Thêm để làm mới SeatSelectionViewModel
+    notifyListeners();
     Navigator.pop(context);
   }
 }
