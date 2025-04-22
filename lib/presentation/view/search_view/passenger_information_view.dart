@@ -322,7 +322,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Text(
-            detailVM.price,
+            detailVM.totalPrice,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ],
@@ -371,7 +371,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Ticket price'),
-                    Text(detailVM.price),
+                    Text(detailVM.totalPrice),
                   ],
                 ),
               ),
