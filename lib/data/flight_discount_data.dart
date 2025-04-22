@@ -2,7 +2,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/VungTau.jpg",
     "route": "Ho Chi Minh - Vung Tau",
-    "logo": "assets/logo/vietjet.png",
+    "logo": "assets/logo/VietJet-Air.png",
     "date": "15 April 2025",
     "oldPrice": "600.000 VND",
     "newPrice": "499.999 VND",
@@ -11,7 +11,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/CanTho.jpg",
     "route": "Ho Chi Minh - Can Tho",
-    "logo": "assets/logo/vn airlines.png",
+    "logo": "assets/logo/Vietnam-Airlines.png",
     "date": "1 April 2025",
     "oldPrice": "899.837 VND",
     "newPrice": "638.893 VND",
@@ -29,7 +29,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/DaNang.jpg",
     "route": "Ho Chi Minh - Da Nang",
-    "logo": "assets/logo/vn airlines.png",
+    "logo": "assets/logo/Vietnam-Airlines.png",
     "date": "9 April 2025",
     "oldPrice": "1.520.837 VND",
     "newPrice": "1.138.893 VND",
@@ -38,7 +38,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/TaiWan.jpg",
     "route": "Ho Chi Minh - TaiWan",
-    "logo": "assets/logo/vietjet.png",
+    "logo": "assets/logo/VietJet-Air.png",
     "date": "24 April 2025",
     "oldPrice": "3.720.837 VND",
     "newPrice": "1.999.999 VND",
@@ -47,7 +47,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/TurKey.jpg",
     "route": "Ho Chi Minh City - Turkey",
-    "logo": "assets/logo/vietjet.png",
+    "logo": "assets/logo/VietJet-Air.png",
     "date": "7 April 2025",
     "oldPrice": "4.720.837 VND",
     "newPrice": "3.999.999 VND",
@@ -56,7 +56,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/KhanhHoa.jpg",
     "route": "Ho Chi Minh - Khanh Hoa",
-    "logo": "assets/logo/vietjet.png",
+    "logo": "assets/logo/VietJet-Air.png",
     "date": "19 April 2025",
     "oldPrice": "1.200.837 VND",
     "newPrice": "938.999 VND",
@@ -65,7 +65,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/HaNoi.jpg",
     "route": "Ho Chi Minh - Hanoi",
-    "logo": "assets/logo/vn airlines.png",
+    "logo": "assets/logo/Vietnam-Airlines.png",
     "date": "7 April 2025",
     "oldPrice": "2.800.000 VND",
     "newPrice": "1.900.000 VND",
@@ -74,7 +74,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/ThuaThienHue.jpg",
     "route": "Da Nang - Thua Thien Hue",
-    "logo": "assets/logo/vn airlines.png",
+    "logo": "assets/logo/Vietnam-Airlines.png",
     "date": "7 April 2025",
     "oldPrice": "1.720.837 VND",
     "newPrice": "1.238.893 VND",
@@ -101,7 +101,7 @@ final List<Map<String, String>> flights = [
   {
     "image": "assets/image/ToKyo.jpg",
     "route": "Ho Chi Minh - Tokyo, Japan",
-    "logo": "assets/logo/vn airlines.png",
+    "logo": "assets/logo/Vietnam-Airlines.png",
     "date": "30 April 2025",
     "oldPrice": "12.650.100 VND",
     "newPrice": "10.999.999 VND",

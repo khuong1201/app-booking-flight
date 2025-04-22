@@ -1,3 +1,4 @@
+import 'package:booking_flight/core/utils/validator_utils.dart';
 import 'package:booking_flight/data/additional_services_model.dart';
 import 'package:booking_flight/data/passenger_infor_model.dart';
 import 'package:booking_flight/data/search_flight_data.dart';
@@ -18,7 +19,6 @@ class PaymentViewModel extends ChangeNotifier {
   String? _currentOrderId;
   BuildContext? _paymentContext;
 
-  // Computed properties
   double _flightPrice = 0.0;
   double _additionalServicesTotal = 0.0;
   double _insuranceTotal = 0.0;
@@ -46,22 +46,15 @@ class PaymentViewModel extends ChangeNotifier {
   }
 
   void _calculateTotals() {
-    // Parse flight price from flightData
     _flightPrice = additionalServicesViewModel.parsePrice(passengerInfoViewModel.totalAmount);
-
-    // Calculate additional services total (baggage, seats, meals)
     _additionalServicesTotal = additionalServicesViewModel.additionalServices.fold<double>(
       0.0,
           (sum, service) => sum + (service.baggageCost + service.seatCost + service.mealCost),
     );
-
-    // Calculate insurance total based on selected insurance options
     _insuranceTotal = additionalServicesViewModel.additionalServices.fold<double>(
       0.0,
           (sum, service) => sum + (service.comprehensiveInsuranceCost + service.flightDelayInsuranceCost),
     );
-
-    // Calculate total amount
     _totalAmount = _flightPrice + _additionalServicesTotal + _insuranceTotal;
 
     debugPrint(
@@ -75,70 +68,121 @@ class PaymentViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveTrip(String contactId, Trip trip) async {
+  Future<void> saveTrip(String identifier, Trip trip) async {
     try {
+      // Validate identifier
+      if (identifier.isEmpty) {
+        debugPrint('Error: Identifier is empty');
+        throw Exception('Email or phone number is required');
+      }
+      if (!ValidatorUtils.isValidEmail(identifier) && !ValidatorUtils.isValidPhone(identifier)) {
+        debugPrint('Error: Invalid identifier: $identifier');
+        throw Exception('Invalid email or phone number');
+      }
+
+      // Validate contactInfo
+      final contactInfo = trip.contactInfo;
+      if (contactInfo == null) {
+        debugPrint('Error: Trip contactInfo is null');
+        throw Exception('Contact info is required');
+      }
+      if (contactInfo.email != identifier && contactInfo.phoneNumber != identifier) {
+        debugPrint('Error: contactInfo (email: ${contactInfo.email}, phone: ${contactInfo.phoneNumber}) does not match identifier: $identifier');
+        throw Exception('Contact info must match the provided email or phone number');
+      }
+
+      // Log the Firestore document data
+      final tripData = trip.toFirestore();
+      debugPrint('Saving trip to users/$identifier/trips/${trip.id} with data: $tripData');
+
+      // Save trip
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(contactId)
+          .doc(identifier)
           .collection('trips')
           .doc(trip.id)
-          .set(trip.toJson());
+          .set(tripData);
 
-      // Lưu thông tin ContactInfo vào document user
-      await FirebaseFirestore.instance.collection('users').doc(contactId).set({
-        'contactInfo': ContactInfo(
-          phoneNumber: contactId.contains('@') ? null : contactId,
-          email: contactId.contains('@') ? contactId : null,
-        ).toJson(),
-      }, SetOptions(merge: true));
+      // Save contactInfo
+      final contactInfoData = {
+        'contactInfo': contactInfo.toJson(),
+        'lastUpdated': Timestamp.now(),
+      };
+      debugPrint('Saving contact info to users/$identifier with data: $contactInfoData');
+      await FirebaseFirestore.instance.collection('users').doc(identifier).set(
+        contactInfoData,
+        SetOptions(merge: true),
+      );
 
-      debugPrint('Trip saved successfully for contactId: $contactId');
+      debugPrint('Trip and contact info saved successfully for identifier: $identifier');
     } catch (e) {
-      debugPrint('Error saving trip: $e');
-      throw Exception('Failed to save trip: $e');
+      debugPrint('Error saving trip or contact info: $e');
+      throw Exception('Failed to save trip or contact info: $e');
     }
   }
 
   Future<void> _saveTripToFirestore() async {
     try {
-      // Lấy contactId từ hành khách đầu tiên (giả định người đặt vé chính)
       final passengers = passengerInfoViewModel.passengers;
       if (passengers.isEmpty) {
+        debugPrint('Error: No passengers found');
         throw Exception('No passengers found');
       }
 
-      final contactId = passengers.first.contactInfo?.phoneNumber ??
-          passengers.first.contactInfo?.email;
-      if (contactId == null) {
-        throw Exception('No contact information (phone or email) found for passenger');
+      debugPrint('Passenger count: ${passengers.length}');
+      for (var i = 0; i < passengers.length; i++) {
+        debugPrint('Passenger $i: ${passengers[i].toJson()}');
       }
 
-      // Chuyển đổi AdditionalServicesData thành Map để lưu vào Trip
-      final additionalServicesData = additionalServicesViewModel.additionalServices
-          .map((service) => {
-        'baggageCost': service.baggageCost,
-        'seatCost': service.seatCost,
-        'mealCost': service.mealCost,
-        'comprehensiveInsuranceCost': service.comprehensiveInsuranceCost,
-        'flightDelayInsuranceCost': service.flightDelayInsuranceCost,
-      })
-          .toList();
+      final viewModelJson = passengerInfoViewModel.toJson();
+      debugPrint('PassengerInfoViewModel JSON: $viewModelJson');
 
-      // Tạo Trip object
+      final contactInfoJson = viewModelJson['contactInfo'] as Map<String, dynamic>?;
+      if (contactInfoJson == null ||
+          (contactInfoJson['email']?.toString().isEmpty ?? true) &&
+              (contactInfoJson['phoneNumber']?.toString().isEmpty ?? true)) {
+        debugPrint('Error: No valid contact information found');
+        throw Exception('No valid contact information (phone or email) found');
+      }
+
+      final contactInfo = ContactInfo(
+        phoneNumber: contactInfoJson['phoneNumber'] as String?,
+        email: contactInfoJson['email'] as String?,
+      );
+
+      final identifier = contactInfo.email ?? contactInfo.phoneNumber;
+      if (identifier == null || identifier.isEmpty) {
+        debugPrint('Error: No valid email or phoneNumber found');
+        throw Exception('No valid email or phone number found');
+      }
+
+      debugPrint('Using identifier: $identifier');
+
+      final additionalServicesData = additionalServicesViewModel.additionalServices.map((service) {
+        return {
+          'baggageCost': service.baggageCost,
+          'seatCost': service.seatCost,
+          'mealCost': service.mealCost,
+          'comprehensiveInsuranceCost': service.comprehensiveInsuranceCost,
+          'flightDelayInsuranceCost': service.flightDelayInsuranceCost,
+        };
+      }).toList();
+
       final trip = Trip(
         id: _currentOrderId ?? 'TRIP_${DateTime.now().millisecondsSinceEpoch}',
         flightData: flightData,
         passengers: passengers,
+        contactInfo: contactInfo,
         additionalServices: additionalServicesData,
         totalAmount: _totalAmount,
         createdAt: Timestamp.now(),
       );
 
-      // Lưu Trip vào Firestore
-      await saveTrip(contactId, trip);
+      await saveTrip(identifier, trip);
+      debugPrint('Trip saved to Firestore for identifier: $identifier');
     } catch (e) {
       debugPrint('Error in _saveTripToFirestore: $e');
-      if (_paymentContext != null) {
+      if (_paymentContext != null && _paymentContext!.mounted) {
         ScaffoldMessenger.of(_paymentContext!).showSnackBar(
           SnackBar(
             content: Text(
@@ -156,49 +200,48 @@ class PaymentViewModel extends ChangeNotifier {
   Future<void> initiatePayment(BuildContext context) async {
     _paymentContext = context;
     _isLoading = true;
-    _currentOrderId = "ORDER_${DateTime.now().millisecondsSinceEpoch}";
+    _currentOrderId = 'ORDER_${DateTime.now().millisecondsSinceEpoch}';
     notifyListeners();
 
     try {
-      // Simulate payment processing
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Save data to Firestore
+      await Future.delayed(const Duration(seconds: 2)); // Simulate payment
       await _saveTripToFirestore();
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            '✅ Payment successful (simulated)!',
-            style: TextStyle(color: Colors.white),
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              '✅ Payment successful (simulated)!',
+              style: TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.green,
           ),
-          backgroundColor: Colors.green,
-        ),
-      );
-
-      // Navigate back to HomeScreen
-      Navigator.popUntil(context, (route) {
-        return route.settings.name == '/homeScreen' || route.isFirst;
-      });
-
-      if (ModalRoute.of(context)?.settings.name != '/homeScreen') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const BookingFlightScreen()),
         );
+
+        Navigator.popUntil(context, (route) {
+          return route.settings.name == '/homeScreen' || route.isFirst;
+        });
+
+        if (ModalRoute.of(context)?.settings.name != '/homeScreen' && context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const BookingFlightScreen()),
+          );
+        }
       }
     } catch (e) {
       debugPrint('Payment initiation failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            '❌ Payment failed: $e',
-            style: const TextStyle(color: Colors.white),
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '❌ Payment failed: $e',
+              style: const TextStyle(color: Colors.white),
+            ),
+            backgroundColor: Colors.red,
           ),
-          backgroundColor: Colors.red,
-        ),
-      );
+        );
+      }
     } finally {
       _isLoading = false;
       _currentOrderId = null;
@@ -214,11 +257,14 @@ class PaymentViewModel extends ChangeNotifier {
     }
     final formatted = amount.toStringAsFixed(0);
     return formatted.replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+          (Match m) => '${m[1]},',
+    );
   }
 
   @override
   void dispose() {
+    debugPrint('Disposing PaymentViewModel');
     _paymentContext = null;
     super.dispose();
   }

@@ -1,259 +1,213 @@
+import 'dart:async';
 import 'package:booking_flight/core/utils/caculator_price_total_passenger.dart';
+import 'package:booking_flight/data/SearchViewModel.dart';
+import 'package:booking_flight/data/search_flight_data.dart';
+import 'package:booking_flight/presentation/view/home/detail_flight_tickets.dart';
 import 'package:booking_flight/presentation/viewmodel/home/detail_flight_tickets_view_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import '../../../data/search_flight_data.dart';
-import '../../view/home/Detail_flight_tickets.dart';
-import '../../../data/SearchViewModel.dart';
 
 class FlightTicketViewModel extends ChangeNotifier {
-  FlightData? _flightData;
+  List<FlightData> _flights = [];
+  FlightData? _selectedFlight;
   final SearchViewModel? searchViewModel;
-  int _searchOptionsTabIndex = 0;
-  final PriceCalculator _pricingService = PriceCalculator(); // Khởi tạo PriceCalculator
+  final PriceCalculator _pricingService = PriceCalculator();
+  final Map<String, List<FlightData>> _flightCache = {};
+  StreamSubscription<DocumentSnapshot>? _flightSubscription;
+  final StreamController<List<FlightData>> _flightStreamController = StreamController<List<FlightData>>.broadcast();
 
-  FlightTicketViewModel({
-    required FlightData? flightData,
-    required this.searchViewModel,
-  }) : _flightData = flightData;
+  FlightTicketViewModel({this.searchViewModel}) {
+    // Defer fetchFlights to avoid synchronous state changes during initialization
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchFlights();
+    });
+  }
 
-  // --- Getters for Basic Flight Information ---
-  String get airlineLogo => _flightData?.airlineLogo ?? '';
-  String get airlineName => _flightData?.airlineName ?? '';
-  String get departureTime => _flightData?.departureTime ?? '';
-  String get departureAirport => _flightData?.departureAirport ?? '';
-  String get arrivalTime => _flightData?.arrivalTime ?? '';
-  String get arrivalAirport => _flightData?.arrivalAirport ?? '';
-  String get duration => _flightData?.duration ?? '';
-  String get basePrice => _flightData?.price ?? '';
-  String get departureDate => _flightData?.departureDate ?? '';
-  String? get returnDate => _flightData?.returnDate;
-  String? get returnDepartureTime => _flightData?.returnDepartureTime;
-  String? get returnArrivalTime => _flightData?.returnArrivalTime;
-
-  // --- Passenger Information from Search ---
-  int get passengerAdults => searchViewModel?.passengerAdults ?? 0;
-  int get passengerChilds => searchViewModel?.passengerChilds ?? 0;
-  int get passengerInfants => searchViewModel?.passengerInfants ?? 0;
-  String get seatClass => searchViewModel?.seatClass ?? "Economy";
-
+  // Getters for UI
+  List<FlightData> get flights => _flights;
+  Stream<List<FlightData>> get flightStream => _flightStreamController.stream;
+  String get airlineLogo => _selectedFlight?.airlineLogo ?? '';
+  String get airlineName => _selectedFlight?.airlineName ?? '';
+  String get departureTime => _selectedFlight?.departureTime ?? '';
+  String get departureAirport => _selectedFlight?.departureAirport ?? '';
+  String get arrivalTime => _selectedFlight?.arrivalTime ?? '';
+  String get arrivalAirport => _selectedFlight?.arrivalAirport ?? '';
+  String get duration => _selectedFlight?.duration ?? '';
+  String get price => _pricingService.calculateTotalPrice(
+    basePrice: _selectedFlight?.price ?? '',
+    adults: passengerAdults,
+    children: passengerChilds,
+    infants: passengerInfants,
+  );
   String get passengerCount {
     final total = passengerAdults + passengerChilds + passengerInfants;
     return '$total Pax';
   }
 
-  // --- Total Price Calculation ---
-  String get totalPrice => _pricingService.calculateTotalPrice(
-    basePrice: _flightData?.price ?? '',
-    adults: passengerAdults,
-    children: passengerChilds,
-    infants: passengerInfants,
-  );
+  // Passenger and search data
+  int get passengerAdults => searchViewModel?.passengerAdults ?? 0;
+  int get passengerChilds => searchViewModel?.passengerChilds ?? 0;
+  int get passengerInfants => searchViewModel?.passengerInfants ?? 0;
+  String get searchDepartureDate =>
+      searchViewModel?.departureDate != null
+          ? DateFormat('yyyy-MM-dd').format(searchViewModel!.departureDate!)
+          : '';
+  String get searchArrivalDate =>
+      searchViewModel?.returnDate != null
+          ? DateFormat('yyyy-MM-dd').format(searchViewModel!.returnDate!)
+          : '';
+  String get searchDepartureAirportCode =>
+      searchViewModel?.departureAirport?['code']?.toString() ?? '';
+  String get searchArrivalAirportCode =>
+      searchViewModel?.arrivalAirport?['code']?.toString() ?? '';
 
-  // Thêm phương thức calculateTotalAmount để hỗ trợ findCheapestFlight
-  double calculateTotalAmount() => _pricingService.calculateTotalAmount(
-    basePrice: _flightData?.price ?? '',
-    adults: passengerAdults,
-    children: passengerChilds,
-    infants: passengerInfants,
-  );
+  Future<void> fetchFlights() async {
+    if (searchViewModel == null) {
+      debugPrint('❌ Error: SearchViewModel is null');
+      _flights = [];
+      _selectedFlight = null;
+      _flightStreamController.add([]);
+      notifyListeners();
+      return;
+    }
 
-  // --- Search Criteria Display ---
-  String get searchDepartureDate {
-    final departureDate = searchViewModel?.departureDate;
-    return departureDate != null
-        ? DateFormat('yyyy-MM-dd').format(departureDate)
-        : 'Unknown';
+    try {
+      final departureDate = searchDepartureDate;
+      final departureAirport = searchDepartureAirportCode;
+      final arrivalAirport = searchArrivalAirportCode;
+      final cacheKey = '$departureDate-$departureAirport-$arrivalAirport';
+
+      debugPrint('🔍 Fetching flights for $cacheKey');
+
+      // Check cache first
+      if (_flightCache.containsKey(cacheKey)) {
+        debugPrint('✅ Using cached flights for $cacheKey');
+        _flights = _flightCache[cacheKey]!;
+        _selectedFlight = _flights.isNotEmpty ? _flights.first : null;
+        _flightStreamController.add(_flights);
+        notifyListeners();
+        return;
+      }
+
+      // Cancel existing subscription
+      await _flightSubscription?.cancel();
+
+      // Set up Firestore stream
+      _flightSubscription = FirebaseFirestore.instance
+          .collection('flights')
+          .doc(departureDate)
+          .collection(departureAirport)
+          .doc(arrivalAirport)
+          .snapshots()
+          .listen((docSnapshot) {
+        List<FlightData> newFlights = [];
+        if (docSnapshot.exists) {
+          final flight = FlightData.fromFirestore(docSnapshot);
+          // Check if flight matches one-way or round-trip criteria
+          if (searchViewModel!.returnDate != null) {
+            if (flight.returnDate == searchArrivalDate) {
+              newFlights = [flight];
+            }
+          } else {
+            if (flight.returnDate == null) {
+              newFlights = [flight];
+            }
+          }
+        }
+
+        _flights = newFlights;
+        _selectedFlight = _flights.isNotEmpty ? _flights.first : null;
+        _flightCache[cacheKey] = _flights;
+        _flightStreamController.add(_flights);
+        notifyListeners();
+        debugPrint('✅ Streamed ${_flights.length} flights');
+      }, onError: (e) {
+        debugPrint('❌ Error streaming flights: $e');
+        _flights = [];
+        _selectedFlight = null;
+        _flightCache[cacheKey] = [];
+        _flightStreamController.add([]);
+        notifyListeners();
+      });
+    } catch (e) {
+      debugPrint('❌ Error fetching flights: $e');
+      _flights = [];
+      _selectedFlight = null;
+      _flightStreamController.add([]);
+      notifyListeners();
+    }
   }
 
-  String get searchArrivalDate {
-    final returnDate = searchViewModel?.returnDate;
-    return returnDate != null
-        ? DateFormat('yyyy-MM-dd').format(returnDate)
-        : 'Unknown';
-  }
-
-  String get searchDepartureAirportCode {
-    return searchViewModel?.departureAirport?['code'] ?? 'Unknown';
-  }
-
-  String get searchArrivalAirportCode {
-    return searchViewModel?.arrivalAirport?['code'] ?? 'Unknown';
-  }
-
-  int get totalPassengerCount =>
-      passengerAdults + passengerChilds + passengerInfants;
-
-  // --- Tab Bar State for Search Options ---
-  int get searchOptionsTabIndex => _searchOptionsTabIndex;
-
-  void onSearchOptionsTabTapped(int index) {
-    _searchOptionsTabIndex = index;
+  void selectFlight(FlightData flight) {
+    _selectedFlight = flight;
     notifyListeners();
   }
 
-  // --- Data Update Method ---
-  void updateFlightData(FlightData? newFlightData) {
-    _flightData = newFlightData;
-    notifyListeners();
-  }
-
-  // --- Utility Methods ---
-  static double _parsePrice(String price) {
-    try {
-      String cleanedPrice = price.replaceAll('VND', '').trim();
-      cleanedPrice = cleanedPrice.replaceAll('.', '');
-      cleanedPrice = cleanedPrice.replaceAll(',', '.');
-      return double.parse(cleanedPrice);
-    } catch (e) {
-      debugPrint('Lỗi phân tích giá: $e với đầu vào: $price');
-      return 0.0;
-    }
-  }
-
-  static DateTime? _parseDate(String date) {
-    try {
-      return DateTime.parse(date);
-    } catch (e) {
-      return null;
-    }
-  }
-
-  // --- Static Methods for Data Handling ---
-  static List<FlightTicketViewModel> fetchAllData(
-      List<FlightData> flightDataList, SearchViewModel? searchViewModel) {
-    return flightDataList
-        .map((data) => FlightTicketViewModel(
-      flightData: data,
-      searchViewModel: searchViewModel,
-    ))
-        .toList();
-  }
-
-  static List<FlightTicketViewModel> filterFlights({
-    required List<FlightTicketViewModel> flights,
-    required String departureInfo,
-    required String arrivalInfo,
-    required String date,
-    bool isRoundTrip = false,
-    String? returnDate,
-  }) {
-    String extractAirportCode(String airportInfo) {
-      final regExp = RegExp(r'\((.*?)\)');
-      final match = regExp.firstMatch(airportInfo);
-      return match?.group(1)?.toLowerCase() ?? '';
-    }
-
-    final filterDepartureCode = extractAirportCode(departureInfo);
-    final filterArrivalCode = extractAirportCode(arrivalInfo);
-
-    if (filterDepartureCode.isEmpty || filterArrivalCode.isEmpty) {
-      debugPrint(
-          'Error: Could not extract airport codes from input: $departureInfo / $arrivalInfo');
-      return [];
-    }
-
-    final filterDate = _parseDate(date);
-    if (filterDate == null) {
-      debugPrint('Error parsing filter date: $date');
-      return [];
-    }
-
-    DateTime? filterReturnDate;
-    if (isRoundTrip && returnDate != null) {
-      filterReturnDate = _parseDate(returnDate);
-      if (filterReturnDate == null) {
-        debugPrint('Error parsing return date: $returnDate');
-        return [];
-      }
-    }
-
-    final filteredFlights = flights.where((flight) {
-      final matchesDeparture =
-          flight.departureAirport.toLowerCase() == filterDepartureCode;
-      final matchesArrival =
-          flight.arrivalAirport.toLowerCase() == filterArrivalCode;
-
-      final flightDate = _parseDate(flight.departureDate);
-      final matchesDate = flightDate != null &&
-          flightDate.year == filterDate.year &&
-          flightDate.month == filterDate.month &&
-          flightDate.day == filterDate.day;
-
-      bool matchesReturnDate = true;
-      if (isRoundTrip && filterReturnDate != null) {
-        final flightReturnDate = flight.returnDate != null
-            ? _parseDate(flight.returnDate!)
-            : null;
-        matchesReturnDate = flightReturnDate != null &&
-            flightReturnDate.year == filterReturnDate.year &&
-            flightReturnDate.month == filterReturnDate.month &&
-            flightReturnDate.day == filterReturnDate.day;
-      }
-
-      bool isValidForOneWay = !isRoundTrip ? flight.returnDate == null : true;
-
-      return matchesDeparture &&
-          matchesArrival &&
-          matchesDate &&
-          (!isRoundTrip || matchesReturnDate) &&
-          isValidForOneWay;
-    }).toList();
-
-    debugPrint(
-        'Filtering complete. Input: $filterDepartureCode -> $filterArrivalCode on $date${isRoundTrip ? ' (Round-trip, return: $returnDate)' : ''}. Found: ${filteredFlights.length} flights.');
-    return filteredFlights;
-  }
-
-  static FlightTicketViewModel? findCheapestFlight(
-      List<FlightTicketViewModel> flights) {
-    if (flights.isEmpty) return null;
-
-    return flights.reduce((a, b) {
-      final priceA = a.calculateTotalAmount();
-      final priceB = b.calculateTotalAmount();
-      return priceA <= priceB ? a : b;
+  FlightData? findCheapestFlight() {
+    if (_flights.isEmpty) return null;
+    return _flights.reduce((a, b) {
+      final aPrice = _pricingService.calculateTotalAmount(
+        basePrice: a.price,
+        adults: passengerAdults,
+        children: passengerChilds,
+        infants: passengerInfants,
+      );
+      final bPrice = _pricingService.calculateTotalAmount(
+        basePrice: b.price,
+        adults: passengerAdults,
+        children: passengerChilds,
+        infants: passengerInfants,
+      );
+      return aPrice < bPrice ? a : b;
     });
   }
 
-  // --- Bottom Sheet for Ticket Details ---
   Future<void> showTicketDetailsSheet(BuildContext context) async {
-    if (_flightData == null) {
-      debugPrint('Error: Flight data is null');
+    if (_selectedFlight == null) {
+      debugPrint('❌ Error: No selected flight');
       return;
     }
 
     final detailViewModel = DetailFlightTicketsViewModel(
       searchViewModel: searchViewModel,
-      flightData: _flightData,
+      flightData: _selectedFlight,
     );
 
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (BuildContext context) {
-        return ChangeNotifierProvider<DetailFlightTicketsViewModel>(
-          create: (_) => detailViewModel,
-          child: Container(
-            decoration: const BoxDecoration(color: Colors.white),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Consumer<DetailFlightTicketsViewModel>(
-                    builder: (context, viewModel, _) => TicketDetailsView(
-                      viewModel: viewModel,
-                      onClose: () => Navigator.pop(context),
-                    ),
+      builder: (context) => ChangeNotifierProvider<DetailFlightTicketsViewModel>(
+        create: (_) => detailViewModel,
+        child: Container(
+          decoration: const BoxDecoration(color: Colors.white),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Consumer<DetailFlightTicketsViewModel>(
+                  builder: (context, viewModel, _) => TicketDetailsView(
+                    viewModel: viewModel,
+                    onClose: () => Navigator.pop(context),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
+  }
+
+  @override
+  void dispose() {
+    debugPrint('🗑️ Disposing FlightTicketViewModel');
+    _flightSubscription?.cancel();
+    if (!_flightStreamController.isClosed) {
+      _flightStreamController.close();
+    }
+    super.dispose();
   }
 }

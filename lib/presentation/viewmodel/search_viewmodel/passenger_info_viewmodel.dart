@@ -1,16 +1,21 @@
+import 'dart:convert';
+
 import 'package:booking_flight/core/constants/app_colors.dart';
-import 'package:booking_flight/core/utils/validator_utils.dart'; // Import ValidatorUtils
+import 'package:booking_flight/core/utils/validator_utils.dart';
+import 'package:booking_flight/data/contact_info_storage.dart';
+import 'package:booking_flight/data/passenger_infor_model.dart';
+import 'package:booking_flight/presentation/viewmodel/home/detail_flight_tickets_view_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
-import '../../../data/passenger_infor_model.dart';
-import '../home/detail_flight_tickets_view_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PassengerInfoViewModel extends ChangeNotifier {
   final int adultCount;
   final int childCount;
   final int infantCount;
   final DetailFlightTicketsViewModel detailViewModel;
+  final ContactInfoStorage _storage = ContactInfoStorage();
 
   String phoneNumber = '';
   String email = '';
@@ -31,6 +36,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
     required this.detailViewModel,
   }) {
     _initPassengers();
+    _loadSavedContactInfo();
   }
 
   void _initPassengers() {
@@ -39,6 +45,105 @@ class PassengerInfoViewModel extends ChangeNotifier {
       ...List.generate(childCount, (_) => Passenger(type: 'Child')),
       ...List.generate(infantCount, (_) => Passenger(type: 'Infant')),
     ];
+  }
+
+  String _getContactIdentifier() {
+    final identifier = phoneNumber.isNotEmpty ? phoneNumber : email.isNotEmpty ? email : 'default_user';
+    return identifier;
+  }
+
+  Future<void> _loadSavedContactInfo() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((key) => key.startsWith('contact_info_')).toList();
+
+      if (keys.isNotEmpty) {
+        for (var key in keys) {
+          final jsonString = prefs.getString(key);
+          if (jsonString != null) {
+            final jsonMap = jsonDecode(jsonString);
+            final contactInfo = ContactInfo.fromJson(jsonMap);
+            if (contactInfo.phoneNumber != null || contactInfo.email != null) {
+              phoneNumber = contactInfo.phoneNumber ?? '';
+              email = contactInfo.email ?? '';
+              saveContactInfo = true;
+              debugPrint('Loaded ContactInfo into ViewModel: $contactInfo');
+              notifyListeners();
+              return;
+            }
+          }
+        }
+      }
+
+      final identifier = _getContactIdentifier();
+      if (identifier != 'default_user') {
+        final contactInfo = await _storage.loadContactInfo(identifier);
+        if (contactInfo != null) {
+          phoneNumber = contactInfo.phoneNumber ?? '';
+          email = contactInfo.email ?? '';
+          saveContactInfo = true;
+          debugPrint('Loaded ContactInfo into ViewModel: $contactInfo');
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading saved contact info: $e');
+    }
+  }
+
+  // New public method to load contact info
+  Future<ContactInfo?> loadContactInfo(String identifier) async {
+    try {
+      return await _storage.loadContactInfo(identifier);
+    } catch (e) {
+      debugPrint('Error loading contact info for $identifier: $e');
+      return null;
+    }
+  }
+
+  // ... (rest of the existing methods like saveContactInfoIfNeeded, saveTripToFirestore, etc.)
+  Future<void> saveContactInfoIfNeeded() async {
+    if (saveContactInfo && phoneNumber.isNotEmpty && email.isNotEmpty) {
+      try {
+        final contactInfo = ContactInfo(
+          phoneNumber: phoneNumber,
+          email: email,
+        );
+        final identifier = _getContactIdentifier();
+        await _storage.saveContactInfo(contactInfo, identifier);
+        debugPrint('Saved ContactInfo via ViewModel: $contactInfo');
+        await _storage.debugStoredKeys();
+      } catch (e) {
+        debugPrint('Error saving contact info: $e');
+      }
+    }
+  }
+
+  Future<void> saveTripToFirestore() async {
+    final identifier = _getContactIdentifier();
+    try {
+      await FirebaseFirestore.instance.collection('trips').doc(identifier).set(toJson());
+      debugPrint('Saved trip to Firestore for $identifier');
+    } catch (e) {
+      debugPrint('Error saving trip to Firestore: $e');
+    }
+  }
+
+  Future<void> clearSavedContactInfo() async {
+    try {
+      final identifier = _getContactIdentifier();
+      await _storage.clearContactInfo(identifier);
+      phoneNumber = '';
+      email = '';
+      saveContactInfo = false;
+      for (var passenger in _passengers) {
+        passenger.contactInfo = null;
+      }
+      debugPrint('Cleared ContactInfo via ViewModel');
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error clearing contact info: $e');
+    }
   }
 
   String? validateEmail(String? email) {
@@ -55,8 +160,13 @@ class PassengerInfoViewModel extends ChangeNotifier {
     if (phoneNumber != null) this.phoneNumber = phoneNumber;
     if (email != null) this.email = email;
     notifyListeners();
+    // Load saved contact info if the identifier changes
+    if (phoneNumber != null || email != null) {
+      _loadSavedContactInfo();
+    }
   }
 
+  // Rest of the methods (updatePassenger, selectDateOfBirth, etc.) remain unchanged
   void updatePassenger({
     required int index,
     String? lastName,
@@ -93,6 +203,9 @@ class PassengerInfoViewModel extends ChangeNotifier {
         }
       } else {
         passenger.documentNumber = '';
+      }
+      if (saveContactInfo && phoneNumber.isNotEmpty && email.isNotEmpty) {
+        passenger.contactInfo = ContactInfo(phoneNumber: phoneNumber, email: email);
       }
       debugPrint('Updated passenger $index: ${passenger.toString()}');
       notifyListeners();
@@ -153,9 +266,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
 
   void _showInvalidDateSnackbar(BuildContext context, String passengerType) {
     final snackBar = SnackBar(
-      content: Text(
-        'error $passengerType',
-      ),
+      content: Text('Invalid date of birth for $passengerType'),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
@@ -201,7 +312,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
       debugPrint(
           '${p.type}: ${p.lastName} ${p.firstName}, Gender: ${p.gender}, '
               'DOB: ${p.dateOfBirth}, Doc Type: ${p.documentType}, '
-              'Doc Num: ${p.documentNumber}');
+              'Doc Num: ${p.documentNumber}, Contact: ${p.contactInfo}');
     }
     debugPrint(
         'Contact Info - Phone: $phoneNumber, Email: $email, Save Contact: $saveContactInfo');
@@ -266,6 +377,7 @@ class PassengerInfoViewModel extends ChangeNotifier {
               : null,
           'documentType': passenger.documentType ?? 'ID Card',
           'documentNumber': passenger.documentNumber ?? 'null',
+          'contactInfo': passenger.contactInfo?.toJson(),
         };
       }).toList(),
       'flightDetails': {

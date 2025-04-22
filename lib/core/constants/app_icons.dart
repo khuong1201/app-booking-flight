@@ -29,8 +29,8 @@ class AppIcons{
 class AppLogo{
   static  const String primiter = "assets/logo/primiter.png";
   static const String logoBamboo = "assets/logo/Bamboo-Airways-V.png";
-  static const String vietjet = "assets/logo/vietjet.png";
-  static const String vnAirlines = "assets/logo/vn airlines.png";
+  static const String vietjet = "assets/logo/VietJet-Air.png";
+  static const String vnAirlines = "assets/logo/Vietnam-Airlines.png";
   static const String vietravel = "assets/logo/Vietravel-Airlines.png";
 }
 class AppImage{

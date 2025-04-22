@@ -4,46 +4,52 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Trip {
   final String id;
-  final FlightData? flightData; // Changed to FlightData? from Map<String, dynamic>?
+  final FlightData? flightData;
   final List<Passenger> passengers;
+  final ContactInfo contactInfo;
   final List<Map<String, dynamic>> additionalServices;
   final double totalAmount;
   final Timestamp createdAt;
 
   Trip({
     required this.id,
-    required this.flightData,
+    this.flightData,
     required this.passengers,
+    required this.contactInfo,
     required this.additionalServices,
     required this.totalAmount,
     required this.createdAt,
   });
 
-  factory Trip.fromJson(Map<String, dynamic> json) {
+  factory Trip.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>?;
     return Trip(
-      id: json['id'] as String? ?? '', // Handle null ID with default
-      flightData: json['flightData'] != null
-          ? FlightData.fromJson(json['flightData'] as Map<String, dynamic>)
-          : null, // Parse FlightData or set null
-      passengers: (json['passengers'] as List<dynamic>?)
+      id: doc.id,
+      flightData: data?['flightData'] != null
+          ? FlightData.fromJson(data!['flightData'] as Map<String, dynamic>)
+          : null,
+      passengers: (data?['passengers'] as List<dynamic>?)
           ?.map((e) => Passenger.fromJson(e as Map<String, dynamic>))
           .toList() ??
-          [], // Handle null passengers
-      additionalServices: (json['additionalServices'] as List<dynamic>?)
-          ?.map((e) => e as Map<String, dynamic>)
+          [],
+      contactInfo: data?['contactInfo'] != null
+          ? ContactInfo.fromJson(data!['contactInfo'] as Map<String, dynamic>)
+          : ContactInfo(email: null, phoneNumber: null), // Fallback
+      additionalServices: (data?['additionalServices'] as List<dynamic>?)
+          ?.map((e) => Map<String, dynamic>.from(e as Map))
           .toList() ??
-          [], // Handle null services
-      totalAmount: (json['totalAmount'] as num?)?.toDouble() ?? 0.0, // Handle null amount
-      createdAt: json['createdAt'] as Timestamp? ??
-          Timestamp.now(), // Default to now if null
+          [],
+      totalAmount: (data?['totalAmount'] as num?)?.toDouble() ?? 0.0,
+      createdAt: data?['createdAt'] as Timestamp? ?? Timestamp.now(),
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toFirestore() {
     return {
       'id': id,
-      'flightData': flightData?.toJson(), // Convert FlightData to JSON
+      'flightData': flightData?.toJson(),
       'passengers': passengers.map((p) => p.toJson()).toList(),
+      'contactInfo': contactInfo.toJson(), // Added
       'additionalServices': additionalServices,
       'totalAmount': totalAmount,
       'createdAt': createdAt,

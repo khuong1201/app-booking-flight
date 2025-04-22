@@ -1,97 +1,105 @@
 import 'package:booking_flight/data/airport_data.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FlightData {
+  final String id;
   final String airlineName;
   final String airlineLogo;
   final String departureTime;
   final String arrivalTime;
   final String departureDate;
-  final String arrivalDate;
+  final String? arrivalDate;
   final String duration;
   final String price;
-  final String flightCode;
+  final String? flightCode;
   final String departureAirport;
   final String arrivalAirport;
-  final String passengerCount;
+  final String? passengerCount;
   final String? returnDate;
   final String? returnDepartureTime;
   final String? returnArrivalTime;
 
   FlightData({
+    required this.id,
     required this.airlineName,
     required this.airlineLogo,
     required this.departureTime,
     required this.arrivalTime,
     required this.departureDate,
-    required this.arrivalDate,
+    this.arrivalDate,
     required this.duration,
     required this.price,
-    required this.flightCode,
+    this.flightCode,
     required this.departureAirport,
     required this.arrivalAirport,
-    required this.passengerCount,
+    this.passengerCount,
     this.returnDate,
     this.returnDepartureTime,
     this.returnArrivalTime,
   });
 
+  factory FlightData.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+    return FlightData(
+      id: doc.id,
+      airlineName: data['airlineName'] ?? '',
+      airlineLogo: data['airlineLogo'] ?? '',
+      departureTime: data['departureTime'] ?? '',
+      departureAirport: data['departureAirport'] ?? '',
+      arrivalTime: data['arrivalTime'] ?? '',
+      arrivalAirport: data['arrivalAirport'] ?? '',
+      duration: data['duration'] ?? '',
+      price: data['price'] ?? '',
+      departureDate: data['departureDate'] ?? '',
+      arrivalDate: data['returnDate'] ?? data['departureDate'],
+      flightCode: data['flightCode'] ?? '',
+      passengerCount: data['passengerCount'] ?? null,
+      returnDate: data['returnDate'],
+      returnDepartureTime: data['returnDepartureTime'],
+      returnArrivalTime: data['returnArrivalTime'],
+    );
+  }
+
+  factory FlightData.fromJson(Map<String, dynamic> json) {
+    return FlightData(
+      id: json['id'] as String? ?? '',
+      airlineName: json['airlineName'] as String? ?? '',
+      airlineLogo: json['airlineLogo'] as String? ?? '',
+      departureTime: json['departureTime'] as String? ?? '',
+      departureAirport: json['departureAirport'] as String? ?? '',
+      arrivalTime: json['arrivalTime'] as String? ?? '',
+      arrivalAirport: json['arrivalAirport'] as String? ?? '',
+      duration: json['duration'] as String? ?? '',
+      price: json['price'] as String? ?? '',
+      departureDate: json['departureDate'] as String? ?? '',
+      arrivalDate: json['arrivalDate'] as String?,
+      flightCode: json['flightCode'] as String?,
+      passengerCount: json['passengerCount'] as String?,
+      returnDate: json['returnDate'] as String?,
+      returnDepartureTime: json['returnDepartureTime'] as String?,
+      returnArrivalTime: json['returnArrivalTime'] as String?,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'airlineName': airlineName,
       'airlineLogo': airlineLogo,
       'departureTime': departureTime,
+      'departureAirport': departureAirport,
       'arrivalTime': arrivalTime,
-      'departureDate': departureDate,
-      'arrivalDate': arrivalDate,
+      'arrivalAirport': arrivalAirport,
       'duration': duration,
       'price': price,
+      'departureDate': departureDate,
+      'arrivalDate': arrivalDate,
       'flightCode': flightCode,
-      'departureAirport': departureAirport,
-      'arrivalAirport': arrivalAirport,
       'passengerCount': passengerCount,
       'returnDate': returnDate,
       'returnDepartureTime': returnDepartureTime,
       'returnArrivalTime': returnArrivalTime,
     };
-  }
-
-  factory FlightData.fromJson(Map<String, dynamic> json) {
-    const requiredFields = [
-      'airlineName',
-      'airlineLogo',
-      'departureTime',
-      'arrivalTime',
-      'departureDate',
-      'arrivalDate',
-      'duration',
-      'price',
-      'flightCode',
-      'departureAirport',
-      'arrivalAirport',
-      'passengerCount'
-    ];
-    for (var field in requiredFields) {
-      if (json[field] == null) {
-        throw FormatException('Missing required field: $field');
-      }
-    }
-    return FlightData(
-      airlineName: json['airlineName'].toString(),
-      airlineLogo: json['airlineLogo'].toString(),
-      departureTime: json['departureTime'].toString(),
-      arrivalTime: json['arrivalTime'].toString(),
-      departureDate: json['departureDate'].toString(),
-      arrivalDate: json['arrivalDate'].toString(),
-      duration: json['duration'].toString(),
-      price: json['price'].toString(),
-      flightCode: json['flightCode'].toString(),
-      departureAirport: json['departureAirport'].toString(),
-      arrivalAirport: json['arrivalAirport'].toString(),
-      passengerCount: json['passengerCount'].toString(),
-      returnDate: json['returnDate']?.toString(),
-      returnDepartureTime: json['returnDepartureTime']?.toString(),
-      returnArrivalTime: json['returnArrivalTime']?.toString(),
-    );
   }
 }
 
@@ -111,142 +119,10 @@ String getAirportCity(String airportCode) {
   return airport['city']!;
 }
 
-// Lấy danh sách sân bay theo loại
 List<Map<String, String>> getAirportsByType(String type) {
   return airports.where((airport) => airport['type'] == type).toList();
 }
 
-// Lấy danh sách sân bay theo thành phố
 List<Map<String, String>> getAirportsByCity(String city) {
   return airports.where((airport) => airport['city'] == city).toList();
 }
-
-// Danh sách chuyến bay mở rộng từ 22/04 đến 30/04
-final List<FlightData> flightDataList = [
-  // --- Existing flights ---
-  FlightData(
-    airlineLogo: 'assets/logo/Bamboo-Airways-V.png',
-    airlineName: 'Bamboo Airways',
-    departureTime: '06:30',
-    arrivalTime: '08:35',
-    duration: '2h 5m',
-    departureDate: '2025-04-22',
-    arrivalDate: '2025-04-22',
-    price: '2.500.000 VND',
-    flightCode: 'BA234',
-    departureAirport: 'SGN',
-    arrivalAirport: 'HAN',
-    passengerCount: '1 passenger',
-  ),
-  FlightData(
-    airlineLogo: 'assets/logo/vietjet.png',
-    airlineName: 'VietJet Air',
-    departureTime: '09:30',
-    arrivalTime: '11:35',
-    duration: '2h 5m',
-    departureDate: '2025-04-22',
-    arrivalDate: '2025-04-22',
-    price: '2.150.000 VND',
-    flightCode: 'VJ345',
-    departureAirport: 'SGN',
-    arrivalAirport: 'HAN',
-    passengerCount: '1 passenger',
-  ),
-  FlightData(
-    airlineLogo: 'assets/logo/Bamboo-Airways-V.png',
-    airlineName: 'Bamboo Airways',
-    departureTime: '15:30',
-    arrivalTime: '17:35',
-    duration: '1h 45m',
-    departureDate: '2025-04-22',
-    arrivalDate: '2025-04-22',
-    price: '2.500.000 VND',
-    flightCode: 'BA250',
-    departureAirport: 'SGN',
-    arrivalAirport: 'VDO',
-    passengerCount: '1 passenger',
-  ),
-
-  // --- One-way ---
-  FlightData(
-    airlineLogo: 'assets/logo/vn airlines.png',
-    airlineName: 'Vietnam Airlines',
-    departureTime: '07:15',
-    arrivalTime: '09:30',
-    duration: '2h 15m',
-    departureDate: '2025-04-24',
-    arrivalDate: '2025-04-24',
-    price: '2.700.000 VND',
-    flightCode: 'VN123',
-    departureAirport: 'SGN',
-    arrivalAirport: 'DAD',
-    passengerCount: '1 passenger',
-  ),
-  FlightData(
-    airlineLogo: 'assets/logo/vietjet.png',
-    airlineName: 'VietJet Air',
-    departureTime: '10:00',
-    arrivalTime: '12:00',
-    duration: '2h 0m',
-    departureDate: '2025-04-25',
-    arrivalDate: '2025-04-25',
-    price: '2.000.000 VND',
-    flightCode: 'VJ678',
-    departureAirport: 'HAN',
-    arrivalAirport: 'SGN',
-    passengerCount: '1 passenger',
-  ),
-
-  // --- Round-trip ---
-  FlightData(
-    airlineLogo: 'assets/logo/Bamboo-Airways-V.png',
-    airlineName: 'Bamboo Airways',
-    departureTime: '08:00',
-    arrivalTime: '10:10',
-    duration: '2h 10m',
-    departureDate: '2025-04-26',
-    arrivalDate: '2025-04-26',
-    returnDate: '2025-04-29',
-    returnDepartureTime: '18:30',
-    returnArrivalTime: '20:45',
-    price: '4.800.000 VND',
-    flightCode: 'BA789',
-    departureAirport: 'SGN',
-    arrivalAirport: 'CXR',
-    passengerCount: '2 passengers',
-  ),
-  FlightData(
-    airlineLogo: 'assets/logo/vn airlines.png',
-    airlineName: 'Vietnam Airlines',
-    departureTime: '13:00',
-    arrivalTime: '15:00',
-    duration: '2h 0m',
-    departureDate: '2025-04-27',
-    arrivalDate: '2025-04-27',
-    returnDate: '2025-04-30',
-    returnDepartureTime: '10:00',
-    returnArrivalTime: '12:00',
-    price: '5.200.000 VND',
-    flightCode: 'VN456',
-    departureAirport: 'HAN',
-    arrivalAirport: 'DIN',
-    passengerCount: '1 passenger',
-  ),
-  FlightData(
-    airlineLogo: 'assets/logo/vietjet.png',
-    airlineName: 'VietJet Air',
-    departureTime: '19:20',
-    arrivalTime: '21:25',
-    duration: '2h 5m',
-    departureDate: '2025-04-28',
-    arrivalDate: '2025-04-28',
-    returnDate: '2025-04-30',
-    returnDepartureTime: '14:00',
-    returnArrivalTime: '16:05',
-    price: '4.300.000 VND',
-    flightCode: 'VJ999',
-    departureAirport: 'SGN',
-    arrivalAirport: 'HPH',
-    passengerCount: '1 passenger',
-  ),
-];

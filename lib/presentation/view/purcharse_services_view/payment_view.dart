@@ -1,6 +1,5 @@
 import 'package:booking_flight/core/constants/app_colors.dart';
 import 'package:booking_flight/core/constants/text_styles.dart';
-import 'package:booking_flight/data/additional_services_model.dart';
 import 'package:booking_flight/data/search_flight_data.dart';
 import 'package:booking_flight/presentation/viewmodel/purchase_services_viewmodel/additional_services_view_model.dart';
 import 'package:booking_flight/presentation/viewmodel/purchase_services_viewmodel/payment_view_model.dart';

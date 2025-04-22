@@ -1,16 +1,15 @@
+import 'dart:convert';
+import 'package:booking_flight/presentation/view/purcharse_services_view/addition_services_view.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
-
-import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/text_styles.dart';
-import '../../../data/passenger_infor_model.dart';
-import '../../viewmodel/home/detail_flight_tickets_view_model.dart';
-import '../../viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
-import '../purcharse_services_view/addition_services_view.dart';
-import '../../../data/search_flight_data.dart';
-import '../../../data/SearchViewModel.dart';
+import 'package:booking_flight/core/constants/app_colors.dart';
+import 'package:booking_flight/core/constants/text_styles.dart';
+import 'package:booking_flight/data/passenger_infor_model.dart';
+import 'package:booking_flight/data/search_flight_data.dart';
+import 'package:booking_flight/presentation/viewmodel/home/detail_flight_tickets_view_model.dart';
+import 'package:booking_flight/presentation/viewmodel/search_viewmodel/passenger_info_viewmodel.dart';
+import 'package:booking_flight/data/SearchViewModel.dart';
 
 class PassengerInfoScreen extends StatelessWidget {
   final DetailFlightTicketsViewModel detailViewModel;
@@ -72,6 +71,8 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   void initState() {
     super.initState();
     final vm = Provider.of<PassengerInfoViewModel>(context, listen: false);
+    _phoneController.text = vm.phoneNumber;
+    _emailController.text = vm.email;
     _lastNameControllers = List.generate(
       vm.allPassengers.length,
           (index) => TextEditingController(text: vm.allPassengers[index].lastName),
@@ -92,6 +93,15 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       vm.allPassengers.length,
           (index) => TextEditingController(text: vm.allPassengers[index].documentNumber),
     );
+
+    vm.addListener(() {
+      if (_phoneController.text != vm.phoneNumber) {
+        _phoneController.text = vm.phoneNumber;
+      }
+      if (_emailController.text != vm.email) {
+        _emailController.text = vm.email;
+      }
+    });
   }
 
   @override
@@ -129,21 +139,21 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
-                          padding: EdgeInsets.only(left: 16, right: 16, top: 16),
+                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildSectionTitle('CONTACT INFORMATION'),
-                              SizedBox(height: 8,),
+                              const SizedBox(height: 8),
                               _buildDescription(
-                                'Contact information will be used to confirm booking or receive notification from airlines/ agency in case the flight changes.',
+                                'Contact information will be used to confirm booking or receive notification from airlines/agency in case the flight changes.',
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 24),
                         Padding(
-                          padding: EdgeInsets.only(left: 16, right: 16),
+                          padding: const EdgeInsets.only(left: 16, right: 16),
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -155,14 +165,14 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                         ),
                         const SizedBox(height: 24),
                         Padding(
-                          padding: EdgeInsets.only(left: 16, right: 16),
+                          padding: const EdgeInsets.only(left: 16, right: 16),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               _buildSectionTitle('PASSENGER INFORMATION'),
-                              SizedBox(height: 8,),
+                              const SizedBox(height: 8),
                               _buildDescription(
-                                'You must enter your full name with the same order as one in your Passport/ ID card/ TCR for adult or Children’s Birth certificate.',
+                                'You must enter your full name with the same order as one in your Passport/ID card/TCR for adult or Children’s Birth certificate.',
                               ),
                             ],
                           ),
@@ -182,7 +192,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                         const SizedBox(height: 24),
                         Container(
                           padding: const EdgeInsets.only(left: 16, right: 16),
-                          decoration: BoxDecoration(
+                          decoration: const BoxDecoration(
                             color: Colors.white,
                           ),
                           child: _buildSaveContactSwitch(vm),
@@ -280,11 +290,9 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   Widget _buildPassengerInfoSection(PassengerInfoViewModel vm) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: vm.allPassengers
-          .asMap()
-          .entries
-          .map((entry) => _buildPassengerCard(entry.key, entry.value, vm))
-          .toList(),
+      children: vm.allPassengers.asMap().entries.map((entry) {
+        return _buildPassengerCard(entry.key, entry.value, vm);
+      }).toList(),
     );
   }
 
@@ -304,8 +312,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildTotalAmountExpansionTile(
-      PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
+  Widget _buildTotalAmountExpansionTile(PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
     return ExpansionTile(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -315,12 +322,12 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
           Text(
-            detailVM.totalPrice,
+            detailVM.price,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
           ),
         ],
       ),
-      children: <Widget>[
+      children: [
         Container(
           width: double.infinity,
           decoration: const BoxDecoration(
@@ -337,9 +344,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                     Row(
                       children: [
                         Image.asset(
-                          detailVM.airlineLogo.isNotEmpty
-                              ? detailVM.airlineLogo
-                              : 'assets/default_logo.png',
+                          detailVM.airlineLogo.isNotEmpty ? detailVM.airlineLogo : 'assets/default_logo.png',
                           height: 40,
                           width: 40,
                           fit: BoxFit.contain,
@@ -348,7 +353,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                         Text(detailVM.routeTitle),
                       ],
                     ),
-                    Text(detailVM.totalPrice),
+                    Text(detailVM.price),
                   ],
                 ),
               ),
@@ -366,7 +371,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text('Ticket price'),
-                    Text(detailVM.totalPrice),
+                    Text(detailVM.price),
                   ],
                 ),
               ),
@@ -378,13 +383,12 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildContinueButton(
-      PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
+  Widget _buildContinueButton(PassengerInfoViewModel vm, DetailFlightTicketsViewModel detailVM) {
     return SizedBox(
       width: double.infinity,
       height: 60,
       child: ElevatedButton(
-        onPressed: () {
+        onPressed: () async {
           setState(() {
             _showValidationErrors = true;
           });
@@ -419,6 +423,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
           vm.logInfo();
           final jsonOutput = jsonEncode(vm.toJson());
           debugPrint('Passenger Info JSON: $jsonOutput');
+          await vm.saveContactInfoIfNeeded();
 
           if (widget.flightData == null || widget.searchViewModel == null) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -482,18 +487,14 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
       }) {
     return TextField(
       style: AppTextStyle.body2.copyWith(
-        color: controller.text.isNotEmpty
-            ? AppColors.primaryColor
-            : const Color(0xFF9C9C9C),
+        color: controller.text.isNotEmpty ? AppColors.primaryColor : const Color(0xFF9C9C9C),
       ),
       controller: controller,
       decoration: InputDecoration(
         floatingLabelBehavior: FloatingLabelBehavior.always,
         hintText: label,
         border: const OutlineInputBorder(),
-        errorText: _showValidationErrors && validator != null
-            ? validator(controller.text)
-            : null,
+        errorText: _showValidationErrors && validator != null ? validator(controller.text) : null,
         errorStyle: const TextStyle(color: AppColors.secondaryColor),
       ),
       onChanged: (value) {
@@ -505,11 +506,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildPassengerCard(
-      int index,
-      Passenger passenger,
-      PassengerInfoViewModel vm,
-      ) {
+  Widget _buildPassengerCard(int index, Passenger passenger, PassengerInfoViewModel vm) {
     final lastNameController = _lastNameControllers[index];
     final firstNameController = _firstNameControllers[index];
     final dobController = _dobControllers[index];
@@ -539,7 +536,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               'Example: NGUYEN',
               lastNameController,
                   (val) => vm.updatePassenger(index: index, lastName: val),
-              validator: (val) => val == null || val.isEmpty ? 'Last name is not null' : null,
+              validator: (val) => val == null || val.isEmpty ? 'Last name is required' : null,
             ),
             const SizedBox(height: 12),
             const Align(
@@ -550,7 +547,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
               'Middle & First name',
               firstNameController,
                   (val) => vm.updatePassenger(index: index, firstName: val),
-              validator: (val) => val == null || val.isEmpty ? 'First name is not null' : null,
+              validator: (val) => val == null || val.isEmpty ? 'First name is required' : null,
             ),
             const SizedBox(height: 12),
             Row(
@@ -585,11 +582,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildGenderDropdown(
-      Passenger passenger,
-      int index,
-      PassengerInfoViewModel vm,
-      ) {
+  Widget _buildGenderDropdown(Passenger passenger, int index, PassengerInfoViewModel vm) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -599,9 +592,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
           decoration: InputDecoration(
             border: const OutlineInputBorder(),
             hintText: 'Choose',
-            errorText: _showValidationErrors && passenger.gender == null
-                ? 'Gender is not null'
-                : null,
+            errorText: _showValidationErrors && passenger.gender == null ? 'Gender is required' : null,
             errorStyle: const TextStyle(color: AppColors.secondaryColor),
           ),
           value: passenger.gender,
@@ -623,11 +614,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   }
 
   Widget _buildDateOfBirthField(
-      Passenger passenger,
-      int index,
-      PassengerInfoViewModel vm,
-      TextEditingController dobController,
-      ) {
+      Passenger passenger, int index, PassengerInfoViewModel vm, TextEditingController dobController) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -642,7 +629,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             border: const OutlineInputBorder(),
             hintText: 'DD/MM/YYYY',
             errorText: _showValidationErrors && passenger.dateOfBirth == null
-                ? 'Date of birth is not null'
+                ? 'Date of birth is required'
                 : null,
             errorStyle: const TextStyle(color: AppColors.secondaryColor),
           ),
@@ -663,11 +650,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
     );
   }
 
-  Widget _buildDocumentTypeDropdown(
-      Passenger passenger,
-      int index,
-      PassengerInfoViewModel vm,
-      ) {
+  Widget _buildDocumentTypeDropdown(Passenger passenger, int index, PassengerInfoViewModel vm) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -697,10 +680,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
   }
 
   Widget _buildDocumentNumberField(
-      TextEditingController documentNumberController,
-      int index,
-      PassengerInfoViewModel vm,
-      ) {
+      TextEditingController documentNumberController, int index, PassengerInfoViewModel vm) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -716,7 +696,7 @@ class _PassengerInfoBodyState extends State<_PassengerInfoBody> {
             border: const OutlineInputBorder(),
             hintText: 'Input Number',
             errorText: _showValidationErrors && documentNumberController.text.isEmpty
-                ? 'Document number is not null'
+                ? 'Document number is required'
                 : null,
             errorStyle: const TextStyle(color: AppColors.secondaryColor),
           ),

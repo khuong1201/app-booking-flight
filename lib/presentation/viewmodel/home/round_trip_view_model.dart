@@ -1,3 +1,4 @@
+import 'package:booking_flight/presentation/viewmodel/search_viewmodel/search_flight_tiket_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -187,8 +188,15 @@ class RoundTripFormViewModel extends ChangeNotifier implements SearchViewModel {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ChangeNotifierProvider<RoundTripFormViewModel>(
-          create: (_) => this,
+        builder: (context) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider<RoundTripFormViewModel>.value(
+              value: this,
+            ),
+            ChangeNotifierProvider<FlightTicketViewModel>(
+              create: (_) => FlightTicketViewModel(searchViewModel: this),
+            ),
+          ],
           child: FlightTicketScreen(searchViewModel: this),
         ),
       ),

@@ -1,7 +1,6 @@
-import 'package:booking_flight/data/airport_data.dart';
-import 'package:booking_flight/data/search_flight_data.dart';
+import 'package:booking_flight/data/SearchViewModel.dart';
 import 'package:booking_flight/data/trip_model.dart';
-import 'package:booking_flight/presentation/view/home/Detail_flight_tickets.dart';
+import 'package:booking_flight/presentation/view/home/detail_flight_tickets.dart';
 import 'package:booking_flight/presentation/viewmodel/home/detail_flight_tickets_view_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -11,80 +10,109 @@ import 'package:provider/provider.dart';
 class MyTripViewModel extends ChangeNotifier {
   List<Trip> _allTrips = [];
   List<Trip> _recentTrips = [];
+  List<Trip> _filteredAllTrips = [];
+  List<Trip> _filteredRecentTrips = [];
   bool _isLoading = true;
   String? _selectedTripId;
+  String _searchQuery = '';
+  final String contactId;
 
-  List<Trip> get allTrips => _allTrips;
-  List<Trip> get recentTrips => _recentTrips;
+  List<Trip> get allTrips => _filteredAllTrips;
+  List<Trip> get recentTrips => _filteredRecentTrips;
   bool get isLoading => _isLoading;
   String? get selectedTripId => _selectedTripId;
 
-  MyTripViewModel() {
-    _fetchTrips();
-  }
+  MyTripViewModel({required this.contactId});
 
   void selectTrip(String? tripId) {
     _selectedTripId = tripId;
     notifyListeners();
   }
 
-  Future<void> _fetchTrips() async {
-    debugPrint('=== Bắt đầu _fetchTrips ===');
+  void filterTrips(String query) {
+    _searchQuery = query.toLowerCase();
+    if (_searchQuery.isEmpty) {
+      _filteredAllTrips = _allTrips;
+      _filteredRecentTrips = _recentTrips;
+    } else {
+      _filteredAllTrips = _allTrips.where((trip) {
+        final flightData = trip.flightData;
+        if (flightData == null) return false;
+        return flightData.flightCode?.toLowerCase().contains(_searchQuery) == true ||
+            flightData.departureAirport.toLowerCase().contains(_searchQuery) ||
+            flightData.arrivalAirport.toLowerCase().contains(_searchQuery);
+      }).toList();
+      _filteredRecentTrips = _recentTrips.where((trip) {
+        final flightData = trip.flightData;
+        if (flightData == null) return false;
+        return flightData.flightCode?.toLowerCase().contains(_searchQuery) == true ||
+            flightData.departureAirport.toLowerCase().contains(_searchQuery) ||
+            flightData.arrivalAirport.toLowerCase().contains(_searchQuery);
+      }).toList();
+    }
+    notifyListeners();
+  }
+
+  Future<void> fetchTrips() async {
+    debugPrint('Fetching trips for contactId: $contactId');
     _isLoading = true;
     notifyListeners();
 
     try {
-      debugPrint('Đang truy vấn Firestore collection "trips"...');
-      final querySnapshot = await FirebaseFirestore.instance.collection('trips').get();
-      debugPrint('Đã nhận ${querySnapshot.docs.length} tài liệu từ Firestore');
+      final querySnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(contactId)
+          .collection('trips')
+          .get();
 
-      debugPrint('Chuyển đổi tài liệu thành đối tượng Trip...');
+      debugPrint('Retrieved ${querySnapshot.docs.length} trips from Firestore');
+
       final trips = querySnapshot.docs.map((doc) {
-        final data = doc.data();
-        debugPrint('Xử lý tài liệu ID: ${doc.id}, dữ liệu: $data');
+        debugPrint('Processing trip ID: ${doc.id}');
         try {
-          final trip = Trip.fromJson(data);
-          debugPrint('Đã parse Trip: ID=${trip.id}, '
-              'FlightData=${trip.flightData?.flightCode ?? "null"}, '
-              'PassengerCount=${trip.passengers.length}, '
+          final trip = Trip.fromFirestore(doc);
+          debugPrint('Parsed trip: ID=${trip.id}, '
+              'FlightCode=${trip.flightData?.flightCode ?? "null"}, '
+              'Passengers=${trip.passengers.length}, '
               'TotalAmount=${trip.totalAmount}');
           return trip;
         } catch (e) {
-          debugPrint('Lỗi khi parse tài liệu ${doc.id}: $e');
+          debugPrint('Error parsing trip ${doc.id}: $e');
           rethrow;
         }
       }).toList();
 
-      debugPrint('Đã parse ${trips.length} Trips');
-
+      // Sort trips by createdAt (newest first)
       trips.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-      debugPrint('Đã sắp xếp: First Trip createdAt=${trips.isNotEmpty ? trips.first.createdAt.toDate() : "N/A"}');
 
+      // Filter recent trips (last 7 days)
       final now = DateTime.now();
       final last7Days = now.subtract(const Duration(days: 7));
-      debugPrint('Lọc recentTrips: now=$now, last7Days=$last7Days');
-
       _allTrips = trips;
-      _recentTrips = trips
-          .where((trip) {
+      _recentTrips = trips.where((trip) {
         final createdAt = trip.createdAt.toDate();
         final isRecent = createdAt.isAfter(last7Days) && createdAt.isBefore(now);
-        debugPrint('Trip ID=${trip.id}, createdAt=$createdAt, isRecent=$isRecent');
         return isRecent;
-      })
-          .toList();
+      }).toList();
 
-      debugPrint('Kết quả: _allTrips=${_allTrips.length}, _recentTrips=${_recentTrips.length}');
+      // Initialize filtered lists
+      _filteredAllTrips = _allTrips;
+      _filteredRecentTrips = _recentTrips;
+
+      // Apply search filter if query exists
+      if (_searchQuery.isNotEmpty) {
+        filterTrips(_searchQuery);
+      }
+
+      debugPrint('Loaded: allTrips=${_allTrips.length}, recentTrips=${_recentTrips.length}');
       _isLoading = false;
       notifyListeners();
     } catch (e, stackTrace) {
-      debugPrint('Lỗi khi lấy danh sách chuyến đi: $e');
-      debugPrint('StackTrace: $stackTrace');
+      debugPrint('Error fetching trips: $e\nStackTrace: $stackTrace');
       _isLoading = false;
-      showError('Không thể tải danh sách chuyến đi');
+      showError('Không thể tải danh sách chuyến đi', context: null);
       notifyListeners();
     }
-    debugPrint('=== Kết thúc _fetchTrips ===');
   }
 
   String formatCurrency(String price) {
@@ -100,18 +128,23 @@ class MyTripViewModel extends ChangeNotifier {
     return dateFormat.format(dateTime);
   }
 
-  void showError(String message) {
-    debugPrint('Lỗi: $message');
+  void showError(String message, {BuildContext? context}) {
+    debugPrint('Error: $message');
+    if (context != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message)),
+      );
+    }
     notifyListeners();
   }
 
   Future<void> showTicketDetailsSheet(
       BuildContext context,
       Trip trip, {
-        dynamic searchViewModel,
+        SearchViewModel? searchViewModel,
       }) async {
     if (trip.flightData == null) {
-      debugPrint('Lỗi: Dữ liệu chuyến bay rỗng');
+      debugPrint('Error: No flight data available for trip ${trip.id}');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Không có dữ liệu chuyến bay')),
       );
